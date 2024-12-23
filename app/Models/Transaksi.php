@@ -38,8 +38,14 @@ class Transaksi extends Model
         return $this->belongsTo(JenisObat::class, 'jenis_obat_id');
     }
 
+    // Di dalam model Transaksi
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);  // Transaksi berhubungan dengan satu User
+    }
+
+    public function retur()
+    {
+        return $this->hasOne(Retur::class);
     }
 }

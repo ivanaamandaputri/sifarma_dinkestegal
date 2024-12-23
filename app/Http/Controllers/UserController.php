@@ -92,9 +92,10 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-    
+
         // Validasi input
         $validated = $request->validate([
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'nip' => 'required|unique:user,nip,' . $user->id,
             'nama_pegawai' => 'required',
             'jabatan' => 'required',
@@ -104,51 +105,76 @@ class UserController extends Controller
             'password' => 'nullable|min:6|confirmed',
             'konfirmasi_password' => 'nullable|same:password',
         ]);
-    
+
+        
+        // Jika ada file foto baru, hapus foto lama dan simpan yang baru
+        if ($request->hasFile('foto')) {
+            if ($user->foto) {
+                Storage::delete('public/user/' . $user->foto);
+            }
+            $foto = $request->file('foto');
+            $filename = 'FTM_' . time() . '.' . $foto->getClientOriginalExtension();
+            $foto->storeAs('public/user/', $filename);
+            $user->foto = $filename;
+        }
+
         // Update data user
         $user->nip = $request->nip;
         $user->nama_pegawai = $request->nama_pegawai;
         $user->jabatan = $request->jabatan;
         $user->ruangan = $request->ruangan;
         $user->level = $request->level;
-    
+
+
         // Jika password diisi, update password
         if ($request->password) {
             $user->password = bcrypt($request->password);
         }
-    
+
         // Simpan perubahan
         $user->save();
-    
+
         return redirect()->route('user.index')->with('success', 'User berhasil diperbarui!');
     }
-    
-    
+
+
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-    {
-        try {
-            $user = User::findOrFail($id);
+{
+    try {
+        $user = User::findOrFail($id);
 
-            if ($user->level === 'admin') {
-                return redirect()->route('user.index')->with('error', 'User dengan level admin tidak dapat dihapus.');
-            }
-
-            if ($user->foto) {
-                Storage::delete('public/user/' . $user->foto);
-            }
-
-            $user->delete();
-
-            return redirect()->route('user.index')->with('success', 'User berhasil dihapus.');
-        } catch (\Illuminate\Database\QueryException $e) {
-            if ($e->getCode() === "23000") {
-                return redirect()->route('user.index')->with('error', 'User tidak dapat dihapus karena terkait dengan data lain.');
-            }
-
-            return redirect()->route('user.index')->with('error', 'Terjadi kesalahan saat menghapus user.');
+        // Cek jika user adalah admin
+        if ($user->level === 'admin') {
+            return redirect()->route('user.index')->with('error', 'User dengan level admin tidak dapat dihapus.');
         }
+
+        // Cek relasi jika ada data terkait (contoh relasi transaksi)
+        if ($user->transaksi()->exists() || $user->stokMasuk()->exists()) {
+            return redirect()->route('user.index')->with('error', 'User tidak dapat dihapus karena terkait dengan data lain.');
+        }
+
+        // Hapus foto jika ada
+        if ($user->foto) {
+            Storage::delete('public/user/' . $user->foto);
+        }
+
+        // Hapus user
+        $user->delete();
+
+        return redirect()->route('user.index')->with('success', 'User berhasil dihapus.');
+    } catch (\Illuminate\Database\QueryException $e) {
+        // Tangkap error jika user memiliki constraint relasi yang tidak terdefinisi sebelumnya
+        if ($e->getCode() === "23000") { // Kode SQLSTATE untuk integrity constraint violation
+            return redirect()->route('user.index')->with('error', 'User tidak dapat dihapus karena memiliki relasi data.');
+        }
+
+        return redirect()->route('user.index')->with('error', 'Terjadi kesalahan saat menghapus user.');
+    } catch (\Exception $e) {
+        return redirect()->route('user.index')->with('error', 'Terjadi kesalahan tidak terduga.');
     }
+}
+
 }

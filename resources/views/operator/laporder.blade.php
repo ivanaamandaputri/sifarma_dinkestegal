@@ -5,10 +5,10 @@
         <!-- Filter Section -->
         <div class="card mb-4">
             <div class="card-header">
-                <h4 class="card-title mb-0">Filter Laporan Transaksi Obat Keluar</h4>
+                <h4 class="card-title mb-0">Filter Laporan Permintaan Obat</h4>
             </div>
             <div class="card-body">
-                <form action="{{ route('laporan.index') }}" method="GET">
+                <form action="{{ route('laporan.order') }}" method="GET">
                     <div class="row g-3">
                         <!-- Filter Bulan -->
                         <div class="col-md-3">
@@ -27,28 +27,18 @@
                         <!-- Filter Tahun -->
                         <div class="col-md-3">
                             <label for="tahun" class="form-label">Tahun</label>
-                            <select name="tahun" id="tahun" class="form-select">
+                            <select name="tahun" class="form-select">
                                 <option value="">Semua Tahun</option>
-                                @foreach ($tahunList as $tahun)
-                                    <option value="{{ $tahun }}"
-                                        {{ old('tahun', request('tahun')) == $tahun ? 'selected' : '' }}>
-                                        {{ $tahun }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Filter Ruangan -->
-                        <div class="col-md-3">
-                            <label for="ruangan" class="form-label">Ruangan</label>
-                            <select name="ruangan" id="ruangan" class="form-select">
-                                <option value="">Semua Ruangan</option>
-                                @foreach ($instansiList as $ruangan)
-                                    <option value="{{ $ruangan }}"
-                                        {{ old('ruangan', request('ruangan')) == $ruangan ? 'selected' : '' }}>
-                                        {{ $ruangan }}
-                                    </option>
-                                @endforeach
+                                @if ($tahunList->isEmpty())
+                                    <option value="" disabled>Tidak ada data tahun</option>
+                                @else
+                                    @foreach ($tahunList as $tahun)
+                                        <option value="{{ $tahun }}"
+                                            {{ request('tahun') == $tahun ? 'selected' : '' }}>
+                                            {{ $tahun }}
+                                        </option>
+                                    @endforeach
+                                @endif
                             </select>
                         </div>
 
@@ -60,14 +50,14 @@
                                 @foreach ($obatList as $obat)
                                     <option value="{{ $obat->id }}"
                                         {{ old('obat_id', request('obat_id')) == $obat->id ? 'selected' : '' }}>
-                                        {{ $obat->nama_obat }} - {{ $obat->dosis }} ({{ $obat->jenisObat->nama_jenis }})
+                                        {{ $obat->nama_obat }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
 
                         <!-- Submit Button -->
-                        <div class="col-md-3 d-flex justify-content-center align-items-end">
+                        <div class="col-md-3 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary w-100">Terapkan Filter</button>
                         </div>
                     </div>
@@ -78,15 +68,8 @@
         <!-- Table Section -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between">
-                <h4 class="card-title mb-0">Laporan Transaksi Obat Keluar</h4>
-                <a href="{{ route('laporan.cetak', [
-                    'bulan' => request('bulan'),
-                    'tahun' => request('tahun'),
-                    'obat_id' => request('obat_id'),
-                ]) }}"
-                    class="btn btn-success">
-                    <i class="fas fa-print"></i> Cetak Laporan
-                </a>
+                <h4 class="card-title mb-0">Laporan Permintaan Obat</h4>
+                <a href="{{ route('operator.cetakorder') }}" class="btn btn-success">Cetak Laporan</a>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -97,16 +80,14 @@
                                 <th>Tanggal</th>
                                 <th>Nama Obat</th>
                                 <th>Jumlah</th>
-                                <th>Harga</th>
-                                <th>Total</th>
                                 <th>Status</th>
                                 <th>Instansi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($query as $key => $transaksi)
+                            @forelse ($rekapTransaksi as $index => $transaksi)
                                 <tr>
-                                    <td>{{ $key + 1 }}</td>
+                                    <td>{{ $index + 1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($transaksi->tanggal)->translatedFormat('d F Y') }}</td>
                                     <td>
                                         {{ $transaksi->obat->nama_obat }} - {{ $transaksi->obat->dosis }}
@@ -123,34 +104,33 @@
                                             {{ number_format($transaksi->jumlah, 0, ',', '.') }}
                                         @endif
                                     </td>
-                                    <td>Rp {{ number_format($transaksi->obat->harga, 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($transaksi->total, 0, ',', '.') }}</td>
-                                    <td>
-                                        <span
-                                            class="badge {{ $transaksi->status == 'Disetujui' ? 'badge-success' : 'badge-warning' }} text-dark">
-                                            {{ $transaksi->status }}
-                                        </span>
-                                    </td>
+                                    <td>{{ $transaksi->status }}</td>
                                     <td>{{ $transaksi->user->ruangan }}</td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center">Tidak ada permintaan order pada seleksi yang
+                                        dipilih</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
+    </div>
 
-        @push('scripts')
-            <script>
-                $(document).ready(function() {
-                    $('#datatablesSimple').DataTable({
-                        "paging": true,
-                        "searching": true,
-                        "ordering": true,
-                        "responsive": true
-                    });
+    @push('scripts')
+        <script>
+            $(document).ready(function() {
+                $('#datatablesSimple').DataTable({
+                    "paging": true,
+                    "searching": true,
+                    "ordering": true,
+                    "responsive": true
                 });
-            </script>
-        @endpush
-    @endsection
+            });
+        </script>
+    @endpush
+@endsection

@@ -15,25 +15,18 @@ class Retur extends Model
         'transaksi_id',
         'obat_id',
         'user_id',
-        'password',
         'jumlah',
         'alasan_retur',
-        'status'
     ];
 
     public function transaksi()
     {
-        return $this->belongsTo(Transaksi::class);
+        return $this->belongsTo(Transaksi::class, 'transaksi_id');
     }
 
     public function obat()
     {
         return $this->belongsTo(Obat::class, 'obat_id');
-    }
-
-    public function jenisobat()
-    {
-        return $this->belongsTo(JenisObat::class, 'jenis_obat_id');
     }
 
     public function user()

@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>Dashboard SIFARMA</title>
+    <title>SIFARMA</title>
     <!-- Memuat CSS DataTables -->
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" />
 
@@ -18,7 +18,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
 
     <!-- Memuat RowGroup (jika diperlukan) -->
-    <script src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
+    {{-- <script src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script> --}}
 
     <!-- Memuat CKEditor (jika diperlukan) -->
     <script src="https://cdn.ckeditor.com/4.16.0/standard/ckeditor.js"></script>
@@ -43,11 +43,13 @@
 
     <!-- Memuat Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         $(document).ready(function() {
             $('#myTable').DataTable();
         });
     </script>
+
     <style>
         .custom-card {
             background-color: #f8f9fa;
@@ -58,6 +60,7 @@
             /* Efek bayangan */
         }
     </style>
+
 </head>
 
 <body class="sb-nav-fixed">
@@ -76,9 +79,10 @@
             <ul class="navbar-nav ms-md-0 me-lg-4 me-3 ms-auto">
                 <li class="nav-item dropdown d-flex align-items-center"> <!-- Menggunakan Flexbox untuk penyusunan -->
                     <!-- Lonceng Notifikasi -->
-                    <a href="{{ route('dashboard.notifikasi') }}" class="nav-link d-flex align-items-center ms-3">
+                    {{-- <a href="#" class="nav-link d-flex align-items-center ms-3">
                         <i class="fas fa-bell" style="font-size: 20px;"></i> <!-- Ikon lonceng -->
-                    </a>
+                    </a> --}}
+
                     <!-- Foto Profil -->
                     <a class="nav-link dropdown-toggle d-flex align-items-center" id="navbarDropdown" href="#"
                         role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -177,14 +181,14 @@
                                 <div class="sb-nav-link-icon"><i class="fas fa-shopping-cart"></i></div>
                                 Permintaan
                             </a>
-                            <a class="nav-link {{ request()->is('pembelian') ? 'active' : '' }}" href=" ">
+                            {{-- <a class="nav-link {{ request()->is('pembelian') ? 'active' : '' }}" href=" ">
                                 <div class="sb-nav-link-icon"><i class="fa fa-cart-plus"></i></div>
                                 Stok Obat
                             </a>
                             <a class="nav-link {{ request()->is('retur') ? 'active' : '' }}" href=" ">
                                 <div class="sb-nav-link-icon"><i class="fa fa-undo"></i></div>
                                 Retur
-                            </a>
+                            </a> --}}
                             <a class="nav-link {{ request()->is('laporan') ? 'active' : '' }}" href="/laporan">
                                 <div class="sb-nav-link-icon"><i class="fas fa-print"></i></div>
                                 Laporan
@@ -203,15 +207,22 @@
 
                 <!-- Menu Transaksi untuk Operator -->
                 @if (Auth::user()->level == 'operator')
-                    <a class="nav-link {{ request()->is('operator') ? 'active' : '' }}"
+                    <a class="nav-link {{ request()->is('operator/dataobat') ? 'active' : '' }}"
                         href="{{ route('operator.dataobat') }}">
                         <div class="sb-nav-link-icon"><i class="fas fa-pills"></i></div>
                         Data Obat
                     </a>
+
                     <a class="nav-link {{ request()->is('transaksi') ? 'active' : '' }}" href="/transaksi">
                         <div class="sb-nav-link-icon"><i class="fas fa-shopping-cart"></i></div>
                         Order Obat
                     </a>
+                    <a class="nav-link {{ request()->routeIs('laporan.operator') ? 'active' : '' }}"
+                        href="{{ route('laporan.operator') }}">
+                        <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>
+                        Laporan Order
+                    </a>
+
                     <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
                         <div class="sb-nav-link-icon"><i class="fas fa-sign-out-alt"></i></div>
                         Keluar
@@ -281,8 +292,8 @@
     </script>
     <script src="{{ asset('backend/dist/js/scripts.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-    <script src="{{ asset('backend/dist/assets/demo/chart-area-demo.js') }}"></script>
-    <script src="{{ asset('backend/dist/assets/demo/chart-bar-demo.js') }}"></script>
+    {{-- <script src="{{ asset('backend/dist/assets/demo/chart-area-demo.js') }}"></script>
+    <script src="{{ asset('backend/dist/assets/demo/chart-bar-demo.js') }}"></script> --}}
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
     <script src="{{ asset('backend/dist/js/datatables-simple-demo.js') }}"></script>
 

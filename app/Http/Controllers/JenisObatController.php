@@ -10,8 +10,8 @@ class JenisObatController extends Controller
     // Menampilkan daftar jenis obat
     public function index()
     {
-        // Mengambil semua data jenis obat
-        $jenisObat = JenisObat::all();
+        // Mengambil semua data jenis obat dan mengurutkan berdasarkan 'name' secara ascending
+        $jenisObat = JenisObat::orderBy('nama_jenis', 'asc')->get();
 
         // Mengembalikan view dengan data jenis obat
         return view('jenis.index', compact('jenisObat'));

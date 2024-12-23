@@ -80,8 +80,6 @@
                                     <p>Mari bersama membangun kesehatan masyarakat yang lebih baik dengan sistem yang
                                         terintegrasi</p>
                                 </div>
-
-
                             </div>
                         </div>
                     </div>
@@ -101,14 +99,29 @@
 
     <script>
         function validateForm() {
+            // Reset error messages
+            document.getElementById('errorNIP').style.display = 'none';
+            document.getElementById('errorPassword').style.display = 'none';
+
             var nip = document.getElementById('inputNIP').value;
             var password = document.getElementById('inputPassword').value;
+            var valid = true;
 
-            if (nip === "" || password === "") {
-                alert('NIP atau Password tidak boleh kosong.');
-                return false;
+            // Validasi NIP
+            if (nip === "") {
+                document.getElementById('errorNIP').textContent = 'NIP wajib diisi.';
+                document.getElementById('errorNIP').style.display = 'block';
+                valid = false;
             }
-            return true;
+
+            // Validasi Password
+            if (password === "") {
+                document.getElementById('errorPassword').textContent = 'Password wajib diisi.';
+                document.getElementById('errorPassword').style.display = 'block';
+                valid = false;
+            }
+
+            return valid; // Mengembalikan false jika validasi gagal
         }
     </script>
 

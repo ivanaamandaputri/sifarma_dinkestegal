@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notifikasi;
+use App\Models\Retur;
 use App\Models\Transaksi;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,12 +13,12 @@ class PengajuanController extends Controller
 {
     public function index()
     {
-        $transaksi = Transaksi::with('user')  // Mengambil data relasi user
-            ->orderBy('tanggal', 'desc')  // Urutkan berdasarkan tanggal
-            ->orderBy(User::select('ruangan')  // Urutkan berdasarkan kolom ruangan di tabel user
-                ->whereColumn('user.id', 'transaksi.user_id')  // Sesuaikan dengan kolom user_id pada transaksi
-                ->limit(1))  // Pastikan hanya satu nilai yang diambil dari user
-            ->paginate(10);
+        $transaksi = Transaksi::with('user')
+            ->orderBy('tanggal', 'desc')
+            ->orderBy(User::select('ruangan')
+                ->whereColumn('user.id', 'transaksi.user_id')
+                ->limit(1))
+            ->get();
 
         return view('pengajuan.index', compact('transaksi'));
     }
@@ -140,4 +141,61 @@ class PengajuanController extends Controller
 
         return redirect()->back();
     }
+
+    public function retur(Request $request)
+    {
+        try {
+            // Validasi input
+            $request->validate([
+                'id_transaksi' => 'required|exists:transaksis,id',
+                'jumlah' => 'required|integer|min:1',
+                'alasan' => 'required|string|max:255',
+            ]);
+    
+            // Mencari transaksi
+            $transaksi = Transaksi::find($request->id_transaksi);
+    
+            if (!$transaksi) {
+                return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+            }
+    
+            // Mengecek apakah stok obat cukup untuk dikembalikan
+            $obat = $transaksi->obat;
+            $stokLama = $obat->stok;
+    
+            // Update stok obat, menambah jumlah yang dikembalikan
+            $obat->stok += $request->jumlah;
+            $obat->save();
+    
+            // Melakukan update status dan alasan retur pada transaksi
+            $transaksi->status = 'Retur';
+            $transaksi->alasan_retur = $request->alasan;
+            $transaksi->save();
+    
+            // Menyimpan retur ke dalam tabel retur
+            Retur::create([
+                'transaksi_id' => $transaksi->id,
+                'obat_id' => $obat->id,
+                'user_id' => auth()->id(),
+                'jumlah' => $request->jumlah,
+                'alasan_retur' => $request->alasan,
+                'status' => 'Diretur',
+            ]);
+    
+            // Mengirimkan response JSON untuk sukses
+            return response()->json([
+                'message' => 'Retur berhasil diproses dan stok diperbarui.',
+                'transaksi_id' => $transaksi->id,
+                'jumlah' => $request->jumlah,
+                'alasan' => $request->alasan
+            ], 200);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat memproses retur',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
 }

@@ -83,6 +83,7 @@ class TransaksiController extends Controller
     {
         // Validasi data input dari form
         $request->validate([
+            'tanggal' => 'required|date',
             'obat_id' => 'required|exists:obat,id',
             'jumlah' => 'required|integer|min:1',
         ]);
@@ -104,6 +105,7 @@ class TransaksiController extends Controller
             'obat_id' => $request->obat_id,
             'jumlah' => $request->jumlah,
             'total' => $total,
+            'tanggal' => $request->tanggal,
         ]);
 
         return redirect()->route('transaksi.index')->with('success', 'Transaksi berhasil diperbarui');
@@ -117,98 +119,83 @@ class TransaksiController extends Controller
             return redirect()->route('transaksi.index')->with('error', 'Transaksi ini tidak bisa dihapus karena sudah diproses.');
         }
 
-        // Mengembalikan stok obat
-        $obat = $transaksi->obat;
-        $obat->increment('stok', $transaksi->jumlah);
-
         // Menghapus transaksi
         $transaksi->delete();
         return redirect()->route('transaksi.index')->with('success', 'Transaksi berhasil dihapus');
     }
 
-    // Menyimpan retur transaksi
-    public function storeRetur(Request $request)
+    public function retur(Request $request, $id)
     {
-        // Validasi data input untuk retur
-        $validated = $request->validate([
-            'transaksi_id' => 'required|exists:transaksi,id',
-            'jumlah' => 'required|integer',
-            'alasan' => 'required|string',
-            'password' => 'required|string', // Periksa password sesuai kebutuhan
-
-        ]);
-
-        // Membuat retur baru
-        Retur::create([
-            'transaksi_id' => $validated['transaksi_id'],
-            'jumlah' => $validated['jumlah'],
-            'alasan_retur' => $validated['alasan'],
-            'password' => $validated['password'],
-            'user_id' => Auth::id(), // Ambil user yang sedang login
-        ]);
-
-        return response()->json(['success' => true]);
-    }
-
-    public function selesai($id)
-    {
-        $transaksi = Transaksi::findOrFail($id);
-
-        // Periksa status dan ubah jika perlu
-        if ($transaksi->status === 'Disetujui') {
-            $transaksi->status = 'Selesai';
-            $transaksi->save();
-
-            return response()->json(['message' => 'Transaksi Selesai']);
-        }
-
-        return response()->json(['error' => 'Transaksi tidak bisa diubah'], 400);
-    }
-
-    // Menangani retur transaksi
-    public function retur(Request $request)
-    {
-        $request->validate([
-            'jumlah' => 'required|integer',
-            'alasan_retur' => 'nullable|string',
-            'password' => 'required|string',
-        ]);
-
-        // Verifikasi password dan validasi lainnya
-        // Proses untuk membuat retur baru
-        $retur = Retur::create([
-            'transaksi_id' => $request->transaksi_id,
-            'obat_id' => $request->obat_id,
-            'jumlah' => $request->jumlah,
-            'alasan_retur' => $request->alasan_retur,
-            'password' => $request->password, // Proses validasi password di sini
-            'status' => 'Diretur',
-            'user_id' => auth()->id(),
-        ]);
-
-        return response()->json(['success' => 'Retur berhasil diproses']);
-    }
-    public function showTransaksi($tanggal)
-    {
-        return view('nama-view', compact('tanggal'));
-    }
-
-    public function buatPengajuan(Request $request)
-    {
-        $pengajuan = Transaksi::create($request->all());
-
-        // Kirim notifikasi ke semua admin
-        $admins = User::where('level', 'admin')->get(); // Ambil semua admin
-        foreach ($admins as $admin) {
-            Notifikasi::create([
-                'user_id' => $admin->id,
-                'judul' => 'Pengajuan Baru',
-                'pesan' => 'Ada pengajuan baru pada tanggal ' . $pengajuan->tanggal .
-                    ' untuk obat ' . $pengajuan->obat->nama . '. Silakan periksa.',
-                'level' => 'admin',
+        try {
+            $validated = $request->validate([
+                'jumlah' => 'required|integer|min:1',
+                'alasan' => 'required|string',
             ]);
+
+            $transaksi = Transaksi::findOrFail($id);
+            $obat = Obat::findOrFail($transaksi->obat_id);
+
+            if ($validated['jumlah'] > $transaksi->jumlah) {
+                return response()->json(['error' => 'Jumlah retur melebihi jumlah transaksi!'], 400);
+            }
+
+            Retur::create([
+                'transaksi_id' => $transaksi->id,
+                'obat_id' => $obat->id,
+                'user_id' => auth()->id(),
+                'jumlah' => $validated['jumlah'],
+                'alasan_retur' => $validated['alasan'],
+            ]);
+
+            $transaksi->update(['status' => 'Diretur']);
+            $obat->increment('stok', $validated['jumlah']);
+
+            return response()->json(['success' => 'Retur berhasil diajukan!']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Terjadi kesalahan saat memproses retur.'], 500);
+        }
+    }
+
+    // Method di TransaksiController untuk mengambil data retur
+    public function getRetur($id)
+    {
+        $transaksi = Transaksi::find($id);
+
+        if (!$transaksi) {
+            return response()->json(['error' => 'Transaksi tidak ditemukan.'], 404);
         }
 
-        return redirect()->back()->with('success', 'Pengajuan berhasil dibuat.');
+        // Ambil data retur yang sudah diinputkan
+        $retur = $transaksi->retur;
+
+        return response()->json([
+            'jumlah' => $retur->jumlah ?? '0', // Jika retur tidak ada, tampilkan 0
+            'alasan_retur' => $retur->alasan_retur ?? '-' // Tampilkan alasan retur
+        ]);
     }
+
+
+    // public function showTransaksi($tanggal)
+    // {
+    //     return view('nama-view', compact('tanggal'));
+    // }
+
+    // public function buatPengajuan(Request $request)
+    // {
+    //     $pengajuan = Transaksi::create($request->all());
+
+    //     // Kirim notifikasi ke semua admin
+    //     $admins = User::where('level', 'admin')->get(); // Ambil semua admin
+    //     foreach ($admins as $admin) {
+    //         Notifikasi::create([
+    //             'user_id' => $admin->id,
+    //             'judul' => 'Pengajuan Baru',
+    //             'pesan' => 'Ada pengajuan baru pada tanggal ' . $pengajuan->tanggal .
+    //                 ' untuk obat ' . $pengajuan->obat->nama . '. Silakan periksa.',
+    //             'level' => 'admin',
+    //         ]);
+    //     }
+
+    //     return redirect()->back()->with('success', 'Pengajuan berhasil dibuat.');
+    // }
 }

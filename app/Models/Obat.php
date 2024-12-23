@@ -37,6 +37,6 @@ class Obat extends Model
     }
     public function stokMasuk()
     {
-        return $this->hasMany(StokMasuk::class);
+        return $this->hasMany(StokMasuk::class, 'obat_id', 'id');
     }
 }

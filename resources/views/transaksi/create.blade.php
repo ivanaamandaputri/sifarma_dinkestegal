@@ -38,7 +38,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label for="tanggal">Tanggal Order:</label>
+                                        <label for="tanggal">Tanggal Order :</label>
                                         <input type="date" name="tanggal" id="tanggal" class="form-control" required>
                                         <div id="formatted-date" class="mt-2"></div>
                                     </div>
@@ -87,6 +87,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <br>
                             <button type="submit" class="btn btn-primary">Order</button>
                             <a href="{{ route('transaksi.index') }}" class="btn btn-secondary">Batal</a>
                         </form>
@@ -154,5 +155,16 @@
             // Set initial value of dosis when page loads
             updateFields(); // This will set the initial values on page load
         });
+        // Menunggu sampai DOM selesai dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            const tanggalInput = document.getElementById('tanggal');
+
+            // Mengambil tanggal hari ini dalam format YYYY-MM-DD
+            const today = new Date().toISOString().split('T')[0];
+
+            // Set nilai input dengan tanggal hari ini
+            tanggalInput.value = today;
+        });
+    </script>
     </script>
 @endsection

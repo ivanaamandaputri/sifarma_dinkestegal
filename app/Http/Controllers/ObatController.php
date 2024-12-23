@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Obat;
 use App\Models\JenisObat; // Import model JenisObat
 use App\Models\StokMasuk;
+use App\Models\Transaksi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -168,26 +169,30 @@ class ObatController extends Controller
     public function destroy(string $id)
     {
         $obat = Obat::findOrFail($id);
+
+        // Periksa relasi ke tabel 'stok_masuk'
+        if ($obat->stokMasuk()->exists()) {
+            return redirect()->route('obat.index')
+                ->with('error', 'Obat ini tidak dapat dihapus karena masih memiliki data stok masuk yang terkait.');
+        }
+
+        // Periksa relasi ke tabel 'transaksi'
+        if (\App\Models\Transaksi::where('obat_id', $obat->id)->exists()) {
+            return redirect()->route('obat.index')
+                ->with('error', 'Obat ini tidak dapat dihapus karena sudah digunakan dalam transaksi.');
+        }
+
+        // Hapus foto jika ada
         if ($obat->foto) {
-            Storage::delete('public/obat/' . $obat->foto); // Menghapus foto obat jika ada
-        }
-        // Periksa apakah obat ini digunakan dalam transaksi
-        $transaksi = \App\Models\Transaksi::where('obat_id', $obat->id)->first();
-
-        if ($transaksi) {
-            // Jika obat terkait dengan transaksi, tampilkan pesan konfirmasi atau alihkan
-            return redirect()->route('obat.index')->with('error', 'Obat ini tidak dapat dihapus karena sudah digunakan dalam transaksi.');
+            Storage::delete('public/obat/' . $obat->foto);
         }
 
-        // Jika tidak ada transaksi, hapus foto (jika ada) dan hapus obat
-        if ($obat->foto) {
-            Storage::delete('public/obat/' . $obat->foto); // Menghapus foto obat jika ada
-        }
-
+        // Hapus data obat
         $obat->delete();
 
-        return redirect()->route('obat.index')->with('success', 'Obat berhasil dihapus');
+        return redirect()->route('obat.index')->with('success', 'Obat berhasil dihapus.');
     }
+
 
     // Menampilkan detail obat
     public function show(string $id)
@@ -196,11 +201,13 @@ class ObatController extends Controller
         return view('obat.show', compact('obat')); // Mengembalikan view untuk detail obat
     }
 
-    // Menampilkan data obat untuk operator
     public function operatorIndex()
     {
+        // Ambil semua data obat dan urutkan berdasarkan nama obat
         $obat = Obat::orderBy('nama_obat', 'asc')->get();
-        return view('operator.dataobat', compact('obat')); // Pastikan untuk mengarahkan ke view yang tepat
+
+        // Kirim data ke view
+        return view('operator.dataobat', compact('obat'));
     }
 
     // Menampilkan detail obat untuk operator

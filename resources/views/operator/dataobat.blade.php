@@ -2,26 +2,24 @@
 
 @section('content')
     <div class="container py-3">
-        <div class="container-fluid d-flex justify-content-between">
-            <h4 class="card-title">Data Obat</h4>
-        </div>
 
         @if (session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
-
+        <br>
         <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Data Obat Gudang Farmasi</h4>
+            </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="datatablesSimple" class="table-hover table">
+                    <table id="datatablesSimple" class="table-hover table align-middle">
                         <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Nama Obat</th>
-                                <th>Dosis</th>
-                                <th>Jenis</th>
                                 <th>Harga</th>
                                 <th>Stok</th>
                                 <th>Aksi</th>
@@ -31,12 +29,14 @@
                             @foreach ($obat as $item)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $item->nama_obat }}</td>
-                                    <td>{{ $item->dosis }}</td>
-                                    <td>{{ $item->jenisObat->nama_jenis }}</td>
-                                    <td>{{ $item->harga }}</td>
                                     <td>
-                                        {{ $item->stok }}
+                                        {{ $item->nama_obat }} -
+                                        {{ $item->dosis }}
+                                        ({{ $item->jenisObat->nama_jenis }})
+                                    </td>
+                                    <td>Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
+                                    <td>
+                                        {{ number_format($item->stok, 0, ',', '.') }}
                                         @if ($item->stok == 0)
                                             <span class="badge badge-danger">
                                                 Stok Habis!

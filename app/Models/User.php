@@ -43,8 +43,16 @@ class User extends Authenticatable
         $this->attributes['password'] = ($value);
     }
 
+
+    // Di dalam model User
     public function transaksi()
     {
-        return $this->hasMany(Transaksi::class);
+        return $this->hasMany(Transaksi::class);  // Satu user dapat memiliki banyak transaksi
+    }
+
+
+    public function stokMasuk()
+    {
+        return $this->hasMany(StokMasuk::class, 'user_id');
     }
 }

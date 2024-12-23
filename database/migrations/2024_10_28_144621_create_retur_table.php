@@ -13,12 +13,9 @@ class CreateReturTable extends Migration
             $table->unsignedBigInteger('transaksi_id');
             $table->unsignedBigInteger('obat_id');
             $table->unsignedBigInteger('user_id');
-            $table->string('password');
             $table->integer('jumlah');
             $table->text('alasan_retur')->nullable();
-            $table->string('status')->default('Diretur');
             $table->timestamps();
-
             // Menambahkan foreign key constraints
             $table->foreign('transaksi_id')->references('id')->on('transaksi');
             $table->foreign('obat_id')->references('id')->on('obat');

@@ -64,7 +64,7 @@
                                             <span class="badge bg-danger">
                                                 {{ auth()->user()->level == 'admin' ? 'Stok Habis, Restok Segera!' : 'Stok Habis!' }}
                                             </span>
-                                        @elseif ($item->stok < 5)
+                                        @elseif ($item->stok < 1000)
                                             <span class="badge bg-warning">
                                                 {{ auth()->user()->level == 'admin' ? 'Hampir Habis, Restok Segera!' : 'Hampir Habis!' }}
                                             </span>
@@ -72,7 +72,8 @@
                                     </td>
                                     <td>
                                         <!-- Tombol Detail -->
-                                        <a href="{{ route('obat.show', $item->id) }}" class="btn btn-info">Detail</a>
+                                        <a href="{{ route('obat.show', $item->id) }}"
+                                            class="btn btn-info btn-sm">Detail</a>
 
                                         @if (!$readOnly)
                                             <!-- Tombol Edit -->
@@ -83,9 +84,13 @@
                                             <button class="btn btn-success btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#modalTambahStok{{ $item->id }}">Tambah Stok</button>
 
+
                                             <!-- Tombol Hapus -->
                                             <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#modalHapus{{ $item->id }}">Hapus</button>
+                                                data-bs-target="#modalHapus{{ $item->id }}"
+                                                @if ($item->stokMasuk()->exists()) disabled @endif>
+                                                Hapus
+                                            </button>
                                         @endif
                                     </td>
 
@@ -103,19 +108,28 @@
                                                     aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
-                                                Apakah Anda yakin ingin menghapus data obat
-                                                <strong>{{ $item->nama_obat }}</strong>? Data yang sudah dihapus tidak
-                                                dapat dikembalikan.
+                                                @if (!$item->stokMasuk()->exists())
+                                                    AAnda yakin ingin menghapus data obat
+                                                    <strong>{{ $item->nama_obat }}</strong>?
+                                                    Data yang sudah dihapus tidak dapat dikembalikan.
+                                                @else
+                                                    Data obat <strong>{{ $item->nama_obat }}</strong> tidak bisa dihapus
+                                                    karena masih memiliki stok masuk yang terkait.
+                                                @endif
                                             </div>
+
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary"
                                                     data-bs-dismiss="modal">Batal</button>
-                                                <form action="{{ route('obat.destroy', $item->id) }}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger">Hapus</button>
-                                                </form>
+                                                @if (!$item->stokMasuk()->exists())
+                                                    <form action="{{ route('obat.destroy', $item->id) }}" method="POST">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger">Hapus</button>
+                                                    </form>
+                                                @endif
                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -126,6 +140,9 @@
             </div>
         </div>
     </div>
+
+
+
 
     @foreach ($obat as $item)
         <!-- Modal Tambah Stok -->
@@ -153,7 +170,8 @@
                             </div>
                             <div class="mb-3">
                                 <label for="tanggal" class="form-label">Tanggal</label>
-                                <input type="date" name="tanggal" id="tanggal" class="form-control" required>
+                                <input type="date" name="tanggal" id="tanggal" class="form-control"
+                                    value="{{ date('Y-m-d') }}" required>
                             </div>
                         </div>
                         <div class="modal-footer">

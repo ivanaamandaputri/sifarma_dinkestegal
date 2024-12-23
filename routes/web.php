@@ -24,7 +24,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('auth/login');
+    return view('landing');
+    // return view('auth/login');
 });
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -46,37 +47,34 @@ Route::middleware(['auth', 'check.level:admin'])->group(function () {
     Route::resource('jenis_obat', JenisObatController::class);
     Route::get('/jenis-obat/{id}/edit', [JenisObatController::class, 'edit'])->name('jenis_obat.edit');
     Route::resource('transaksi', TransaksiController::class);
-    Route::resource('retur', ReturController::class);
-    Route::get('laporan', [LaporanController::class, 'index'])->name('laporan.index');
-    Route::get('laporan/download', [LaporanController::class, 'download'])->name('laporan.download');
-    Route::get('/laporan/obatMasuk', [LaporanController::class, 'obatMasuk'])->name('laporan.obatMasuk');
-    Route::get('/laporan/obatKeluar', [LaporanController::class, 'obatKeluar'])->name('laporan.obatKeluar');
     Route::get('/pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
     Route::post('/transaksi/approve/{id}', [PengajuanController::class, 'approve'])->name('transaksi.approve');
     Route::post('/transaksi/reject/{id}', [PengajuanController::class, 'reject'])->name('transaksi.reject');
-    Route::get('/laporan/cetak', [LaporanController::class, 'cetak'])->name('laporan.cetak');
     Route::post('/obat/{id}/tambah-stok', [ObatController::class, 'tambahStok'])->name('obat.tambahStok');
-    Route::get('/dashboard/notifikasi', [PengajuanController::class, 'getNotifikasi'])->name('dashboard.notifikasi');
-    Route::get('/notifikasi/baca/{id}', [PengajuanController::class, 'bacaNotifikasi'])->name('notifikasi.baca');
+    Route::get('laporan', [LaporanController::class, 'index'])->name('laporan.index');
+    Route::get('/laporan/cetak', [LaporanController::class, 'cetak'])->name('laporan.cetak');
+    // Route::get('/dashboard/notifikasi', [PengajuanController::class, 'getNotifikasi'])->name('dashboard.notifikasi');
+    // Route::get('/notifikasi/baca/{id}', [PengajuanController::class, 'bacaNotifikasi'])->name('notifikasi.baca');
 });
 
 // Rute untuk operator
 Route::middleware(['auth', 'check.level:operator'])->group(function () {
+    Route::get('/dashboard/operator', [DashboardController::class, 'operator'])->name('dashboard.operator');
     Route::get('/operator/dataobat', [ObatController::class, 'operatorIndex'])->name('operator.dataobat');
     Route::get('/operator/showobat/{id}', [ObatController::class, 'operatorShowobat'])->name('operator.showobat');
     Route::resource('transaksi', TransaksiController::class);
     Route::get('/transaksi/{id}/print', [TransaksiController::class, 'print'])->name('transaksi.print');
-    Route::patch('/transaksi/{id}/selesai', [TransaksiController::class, 'selesai'])->name('transaksi.selesai');
-    Route::post('/retur', [ReturController::class, 'store'])->name('retur.store');
     Route::post('/transaksi/finish/{id}', [TransaksiController::class, 'finish'])->name('transaksi.finish');
-    Route::get('/retur/{transaksiId?}', [ReturController::class, 'index'])->name('retur.index');
     Route::get('/transaksi/detail/{id}', [TransaksiController::class, 'detail'])->name('transaksi.detail');
-    Route::post('/transaksi/selesai/{transaksi}', [TransaksiController::class, 'selesai'])->name('transaksi.selesai');
-
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile/edit/{user}', [ProfileController::class, 'edit'])->name('profile.edit');
     // Route untuk memproses pembaruan profil
     Route::put('/profile/edit/{user}', [ProfileController::class, 'update'])->name('profile.update');
-    // Menangani retur transaksi
-    Route::post('/transaksi/retur', [TransaksiController::class, 'retur'])->name('transaksi.retur');
+    Route::get('/operator/laporder', [LaporanController::class, 'laporder'])->name('laporan.operator');
+    Route::get('/operator/cetakorder', [LaporanController::class, 'cetakOrder'])->name('operator.cetakorder');
+    Route::get('/laporan/order', [LaporanController::class, 'laporder'])->name('laporan.order');
+    Route::post('/transaksi/{id}/retur', [TransaksiController::class, 'retur'])->name('transaksi.retur');
+    Route::get('transaksi/{id}/retur', [TransaksiController::class, 'getRetur'])->name('transaksi.getRetur');
+    Route::get('/operator/rekap', [DashboardController::class, 'rekapTransaksi'])->name('operator.rekap');
+    
 });

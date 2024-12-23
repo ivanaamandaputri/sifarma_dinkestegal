@@ -44,10 +44,13 @@
                             @method('PUT')
                             <div class="row">
                                 <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label for="tanggal">Tanggal Order:</label>
-                                        <input type="date" name="tanggal" id="tanggal" class="form-control"
-                                            value="{{ $transaksi->tanggal }}" required>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="tanggal">Tanggal Order :</label>
+                                            <input type="date" name="tanggal" id="tanggal" class="form-control"
+                                                value="{{ old('tanggal', $transaksi->tanggal->format('Y-m-d')) }}" required>
+                                            <div id="formatted-date" class="mt-2"></div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-12">
@@ -95,6 +98,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <br>
                             <button type="submit" class="btn btn-primary">Update Transaksi</button>
                             <a href="{{ route('transaksi.index') }}" class="btn btn-secondary">Batal</a>
                         </form>

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Transaksi Obat Keluar</title>
+    <title>Laporan Permintaan Obat</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,28 +73,38 @@
             margin-top: 40px;
             font-size: 14px;
             font-weight: bold;
+            /* Menambahkan tebal pada footer secara keseluruhan */
             text-align: center;
+            /* Agar teks footer terpusat */
         }
 
         .footer .signature {
             margin-top: 15px;
+            /* Menyesuaikan jarak atas */
             font-weight: normal;
+            /* Untuk memastikan bagian tanda tangan tidak tebal */
             line-height: 1.4;
+            /* Menambah jarak antar paragraf */
         }
 
         .footer .signature p {
             margin: 3px 0;
+            /* Mengatur jarak atas dan bawah antara elemen */
             font-size: 14px;
+            /* Menyesuaikan ukuran font */
         }
 
         .footer .signature p:last-child {
             margin-bottom: 0;
+            /* Menghilangkan jarak bawah pada elemen terakhir */
         }
 
         .footer .signature p b {
             font-weight: bold;
+            /* Menebalkan bagian tertentu saja, seperti nama pegawai atau NIP */
         }
 
+        /* Media Query for Print */
         @media print {
             body {
                 font-size: 12px;
@@ -119,12 +129,14 @@
                 margin-top: 40px;
             }
 
+            /* Hide buttons or unnecessary elements during print */
             button,
             .no-print {
                 display: none;
             }
         }
 
+        /* Responsive design for small screens */
         @media (max-width: 600px) {
             .container {
                 padding: 10px;
@@ -157,9 +169,8 @@
 
         <br>
         <!-- Judul -->
-        <h1>Laporan Transaksi Obat Keluar</h1>
-        <p>Bulan: {{ $bulan }} | Tahun: {{ $tahun }} | Ruangan: {{ $ruangan }} | Obat:
-            {{ $obat ?? 'Semua Obat' }}</p>
+        <h1>Laporan Permintaan Obat {{ auth()->user()->ruangan }}</h1>
+        <p>Bulan: {{ $bulan }} | Tahun: {{ $tahun }} | Ruangan: {{ $ruangan }}</p>
 
         <!-- Rekap Total Permintaan -->
         <table class="rekap-table">
@@ -167,23 +178,27 @@
                 <tr>
                     <th>No</th>
                     <th>Nama Obat</th>
-                    <th>Total Jumlah</th>
-                    <th>Total Harga</th>
+                    <th>Total Disetujui</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($laporanTransaksi->groupBy('obat_id') as $obatId => $transaksiGroup)
+                @foreach ($rekapTotal as $index => $rekap)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ optional($transaksiGroup->first()->obat)->nama_obat ?? 'Data Obat Tidak Ada' }}</td>
-                        <td>{{ $transaksiGroup->sum('acc') }}</td>
-                        <td>{{ number_format($transaksiGroup->sum('total'), 0, ',', '.') }}</td>
+                        <td>{{ $index + 1 }}</td>
+                        <td>
+                            {{ $rekap->obat->nama_obat }} - {{ $rekap->obat->dosis }}
+                            ({{ $rekap->obat->jenisObat ? $rekap->obat->jenisObat->nama_jenis : '' }})
+                        </td>
+                        <td>{{ number_format($rekap->total_disetujui, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
 
-        <!-- Detail Transaksi -->
+        <h2 style="font-weight: bold;">Detail Permintaan Disetujui</h2>
+
+        <!-- Tabel Data -->
+        <!-- Tabel Data -->
         <table class="data-table">
             <thead>
                 <tr>
@@ -191,54 +206,52 @@
                     <th>Tanggal</th>
                     <th>Nama Obat</th>
                     <th>Jumlah</th>
-                    <th>Status</th>
+                    {{-- <th>Status</th> --}}
                     <th>Instansi</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($laporanTransaksi as $index => $transaksi)
+                @forelse ($rekapTransaksi as $index => $transaksi)
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td>{{ \Carbon\Carbon::parse($transaksi->tanggal)->translatedFormat('d F Y') }}</td>
                         <td>{{ $transaksi->obat->nama_obat }} - {{ $transaksi->obat->dosis }}
-                            ({{ $transaksi->obat->jenisObat->nama_jenis }})</td>
+                            ({{ $transaksi->obat->jenisObat->nama_jenis }})
+                        </td>
                         <td>
                             @if ($transaksi->status == 'Disetujui')
-                                @if ($transaksi->jumlah == $transaksi->acc)
-                                    {{ number_format($transaksi->jumlah, 0, ',', '.') }}
+                                @if ($transaksi->jumlah_akhir == $transaksi->jumlah_acc)
+                                    {{ number_format($transaksi->jumlah_akhir, 0, ',', '.') }}
                                 @else
-                                    {{ number_format($transaksi->jumlah - $transaksi->acc, 0, ',', '.') }}
+                                    {{ number_format($transaksi->jumlah_akhir - $transaksi->jumlah_acc, 0, ',', '.') }}
                                 @endif
                             @else
-                                {{ number_format($transaksi->acc, 0, ',', '.') }}
+                                {{ number_format($transaksi->jumlah_akhir, 0, ',', '.') }}
                             @endif
                         </td>
-                        <td>
-                            @if ($transaksi->status == 'Disetujui')
-                                <span class="badge badge-success">{{ $transaksi->status }}</span>
-                            @elseif($transaksi->status == 'Ditolak')
-                                <span class="badge badge-warning">{{ $transaksi->status }}</span>
-                            @else
-                                <span class="badge badge-light">{{ $transaksi->status }}</span>
-                            @endif
-                        </td>
+                        {{-- <td>{{ $transaksi->status }}</td> --}}
                         <td>{{ $transaksi->user->ruangan }}</td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center">Tidak ada data.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
 
         <!-- Footer -->
         <div class="footer">
-            <p>Tegal, {{ \Carbon\Carbon::now()->formatLocalized('%d %B %Y') }}</p>
+            <p>Tegal, {{ \Carbon\Carbon::now()->formatLocalized('%d %B %Y') }}</p> <!-- Format tanggal Indonesia -->
             <div class="signature">
-                <p><b>Admin {{ auth()->user()->ruangan }}</b></p>
+                <p><b>Operator {{ auth()->user()->ruangan }}</b></p> <!-- Menebalkan nama ruangan -->
                 <br> <br> <br>
                 <p>______________________</p>
-                <p><b>{{ auth()->user()->nama_pegawai }}</b></p>
-                <p><b>NIP {{ auth()->user()->nip }}</b></p>
+                <p><b>{{ auth()->user()->nama_pegawai }}</b></p> <!-- Menebalkan nama pegawai -->
+                <p><b>NIP {{ auth()->user()->nip }}</b></p> <!-- Menebalkan NIP -->
             </div>
         </div>
+
 
         <script>
             window.onload = function() {
