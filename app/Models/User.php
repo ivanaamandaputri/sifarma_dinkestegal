@@ -15,6 +15,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'nip',
+        'kode_user',
         'password',
         'level',
         'foto',
@@ -43,8 +44,6 @@ class User extends Authenticatable
         $this->attributes['password'] = ($value);
     }
 
-
-    // Di dalam model User
     public function transaksi()
     {
         return $this->hasMany(Transaksi::class);  // Satu user dapat memiliki banyak transaksi
@@ -54,5 +53,15 @@ class User extends Authenticatable
     public function stokMasuk()
     {
         return $this->hasMany(StokMasuk::class, 'user_id');
+    }
+
+    public function pemakaianObat()
+    {
+        return $this->hasMany(PemakaianObat::class, 'user_id');
+    }
+
+    public function stokPuskesmas()
+    {
+        return $this->hasMany(StokPuskesmas::class, 'user_id');
     }
 }

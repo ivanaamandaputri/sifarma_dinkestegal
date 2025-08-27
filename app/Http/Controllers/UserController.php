@@ -55,7 +55,8 @@ class UserController extends Controller
             $foto->storeAs('public/user', $filename);
         }
 
-        User::create([
+        // Simpan user sementara tanpa kode_user
+        $user = User::create([
             'nip' => $request->nip,
             'password' => bcrypt($request->password),
             'level' => $request->level,
@@ -65,8 +66,44 @@ class UserController extends Controller
             'foto' => $filename,
         ]);
 
+        // Buat kode_user berdasarkan jabatan dan ID
+        // Mapping prefix jabatan
+        $jabatanPrefix = match ($user->jabatan) {
+            'Kepala Apotik' => 'KPT',
+            'Apoteker' => 'APT',
+            'Staf' => 'STF',
+            default => 'USR',
+        };
+
+        // Mapping inisial ruangan
+        $ruanganInisial = match ($user->ruangan) {
+            'Instalasi Farmasi' => 'IF',
+            'puskesmas Kaligangsa' => 'KG',
+            'puskesmas Margadana' => 'MG',
+            'puskesmas Tegal Barat' => 'TB',
+            'puskesmas Debong Lor' => 'DL',
+            'puskesmas Tegal Timur' => 'TT',
+            'puskesmas Slerok' => 'SL',
+            'puskesmas Tegal Selatan' => 'TS',
+            'puskesmas Bandung' => 'BD',
+            default => 'XX',
+        };
+
+        // Jika admin, tetap gunakan ADM
+        if ($user->level === 'admin') {
+            $jabatanPrefix = 'ADM';
+            // Inisial bisa tetap IF atau kosong jika tidak perlu
+        }
+
+        // Format: PREFIX-INISIAL-0001
+        $kode = $jabatanPrefix . '-' . $ruanganInisial . '-' . str_pad($user->id, 4, '0', STR_PAD_LEFT);
+        $user->kode_user = $kode;
+        $user->save();
+
+
         return redirect()->route('user.index')->with('success', 'Data berhasil disimpan.');
     }
+
 
     /**
      * Display the specified resource.
@@ -106,7 +143,7 @@ class UserController extends Controller
             'konfirmasi_password' => 'nullable|same:password',
         ]);
 
-        
+
         // Jika ada file foto baru, hapus foto lama dan simpan yang baru
         if ($request->hasFile('foto')) {
             if ($user->foto) {
@@ -142,39 +179,46 @@ class UserController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-{
-    try {
-        $user = User::findOrFail($id);
+    {
+        try {
+            $user = User::findOrFail($id);
 
-        // Cek jika user adalah admin
-        if ($user->level === 'admin') {
-            return redirect()->route('user.index')->with('error', 'User dengan level admin tidak dapat dihapus.');
+            // Cek jika user adalah admin
+            if ($user->level === 'admin') {
+                return redirect()->route('user.index')->with('error', 'User dengan level admin tidak dapat dihapus.');
+            }
+
+            // // Cek relasi jika ada data terkait (contoh relasi transaksi)
+            // if ($user->transaksi()->exists() || $user->stokMasuk()->exists()) {
+            //     return redirect()->route('user.index')->with('error', 'User tidak dapat dihapus karena terkait dengan data lain.');
+            // }
+
+            // Hapus foto jika ada
+            if ($user->foto) {
+                Storage::delete('public/user/' . $user->foto);
+            }
+
+            // Hapus user
+            $user->delete();
+
+            //     return redirect()->route('user.index')->with('success', 'User berhasil dihapus.');
+            // } catch (\Illuminate\Database\QueryException $e) {
+            //     // Tangkap error jika user memiliki constraint relasi yang tidak terdefinisi sebelumnya
+            //     if ($e->getCode() === "23000") { // Kode SQLSTATE untuk integrity constraint violation
+            //         return redirect()->route('user.index')->with('error', 'User tidak dapat dihapus karena memiliki relasi data.');
+            //     }
+
+            //     return redirect()->route('user.index')->with('error', 'Terjadi kesalahan saat menghapus user.');
+            // } catch (\Exception $e) {
+            //     return redirect()->route('user.index')->with('error', 'Terjadi kesalahan tidak terduga.');
+            // }
+            return redirect()->route('user.index')->with('success', 'User berhasil dihapus.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() === "23000") {
+                return redirect()->route('user.index')->with('error', 'User tidak dapat dihapus karena terkait dengan data lain.');
+            }
+
+            return redirect()->route('user.index')->with('error', 'Terjadi kesalahan saat menghapus user.');
         }
-
-        // Cek relasi jika ada data terkait (contoh relasi transaksi)
-        if ($user->transaksi()->exists() || $user->stokMasuk()->exists()) {
-            return redirect()->route('user.index')->with('error', 'User tidak dapat dihapus karena terkait dengan data lain.');
-        }
-
-        // Hapus foto jika ada
-        if ($user->foto) {
-            Storage::delete('public/user/' . $user->foto);
-        }
-
-        // Hapus user
-        $user->delete();
-
-        return redirect()->route('user.index')->with('success', 'User berhasil dihapus.');
-    } catch (\Illuminate\Database\QueryException $e) {
-        // Tangkap error jika user memiliki constraint relasi yang tidak terdefinisi sebelumnya
-        if ($e->getCode() === "23000") { // Kode SQLSTATE untuk integrity constraint violation
-            return redirect()->route('user.index')->with('error', 'User tidak dapat dihapus karena memiliki relasi data.');
-        }
-
-        return redirect()->route('user.index')->with('error', 'Terjadi kesalahan saat menghapus user.');
-    } catch (\Exception $e) {
-        return redirect()->route('user.index')->with('error', 'Terjadi kesalahan tidak terduga.');
     }
-}
-
 }

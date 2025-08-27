@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -74,5 +75,52 @@ class ProfileController extends Controller
 
         // Redirect kembali ke halaman profil setelah sukses
         return redirect()->route('profile.index')->with('success', 'Profil berhasil diperbarui');
+    }
+
+    public function indexAdmin()
+    {
+        $user = Auth::user();
+        return view('profile.index_admin', compact('user'));
+    }
+
+    public function editAdmin(User $user)
+    {
+        // Cek apakah user yang sedang login adalah user yang ingin diedit (opsional)
+        if (Auth::id() !== $user->id) {
+            abort(403, 'Unauthorized action. Anda tidak memiliki izin untuk mengakses halaman ini.');
+        }
+
+        return view('profile.edit_admin', compact('user'));
+    }
+
+    public function updateAdmin(Request $request, User $user)
+    {
+        // Cek apakah user yang sedang login adalah user yang ingin diupdate
+        if (Auth::id() !== $user->id) {
+            abort(403, 'Unauthorized action. Anda tidak memiliki izin untuk mengakses halaman ini.');
+        }
+
+        $request->validate([
+            'nip' => 'required|string|max:255|unique:user,nip,' . $user->id,
+            'password' => 'nullable|string|min:6|confirmed',
+            'foto' => 'nullable|image|max:2048',
+        ]);
+
+        $user->nip = $request->nip;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        if ($request->hasFile('foto')) {
+            $foto = $request->file('foto');
+            $namaFoto = time() . '.' . $foto->getClientOriginalExtension();
+            $foto->move(public_path('foto_user'), $namaFoto);
+            $user->foto = $namaFoto;
+        }
+
+        $user->save();
+
+        return redirect()->route('profile.admin.index')->with('success', 'Profil berhasil diperbarui');
     }
 }

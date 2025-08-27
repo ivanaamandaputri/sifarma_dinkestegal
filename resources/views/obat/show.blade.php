@@ -56,7 +56,7 @@
                                     value="Rp {{ number_format($obat->harga, 0, ',', '.') }}" disabled>
                             </div>
                         </div>
-                        <div class="form-group row">
+                        {{-- <div class="form-group row">
                             <label for="exp" class="col-sm-4 col-form-label font-weight-bold">Tanggal
                                 Kadaluwarsa</label>
                             <div class="col-sm-8">
@@ -64,7 +64,7 @@
                                     value="{{ \Carbon\Carbon::parse($obat->exp)->locale('id')->translatedFormat('j M Y') }}"
                                     disabled>
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="form-group row">
                             <label for="keterangan" class="col-sm-4 col-form-label font-weight-bold">Keterangan</label>
                             <div class="col-sm-8">

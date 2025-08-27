@@ -18,6 +18,7 @@ class Obat extends Model
         'exp',
         'keterangan',
         'foto',
+        'kode_obat',
         'jenis_obat_id'
     ];
 
@@ -35,8 +36,19 @@ class Obat extends Model
     {
         return $this->belongsTo(JenisObat::class, 'jenis_obat_id');
     }
+
     public function stokMasuk()
     {
         return $this->hasMany(StokMasuk::class, 'obat_id', 'id');
+    }
+
+    public function pemakaianObat()
+    {
+        return $this->hasMany(PemakaianObat::class, 'obat_id');
+    }
+
+    public function stokPuskesmas()
+    {
+        return $this->hasMany(StokPuskesmas::class, 'obat_id');
     }
 }

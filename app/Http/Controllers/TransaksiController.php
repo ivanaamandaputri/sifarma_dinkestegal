@@ -26,12 +26,18 @@ class TransaksiController extends Controller
     }
 
     // Menampilkan form untuk membuat transaksi baru
-    public function create()
+    public function create(Request $request)
     {
-        // Mengambil semua obat untuk ditampilkan di form
-        $obat = Obat::all();
-        return view('transaksi.create', compact('obat'));
+        $obat = Obat::all(); // List semua obat untuk dropdown
+        $obatTerpilih = null;
+
+        if ($request->has('obat_id')) {
+            $obatTerpilih = Obat::find($request->obat_id);
+        }
+
+        return view('transaksi.create', compact('obat', 'obatTerpilih'));
     }
+
 
     // Menyimpan transaksi baru
     public function store(Request $request)

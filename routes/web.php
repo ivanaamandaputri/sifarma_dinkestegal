@@ -5,11 +5,14 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JenisObatController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\ObatController;
+use App\Http\Controllers\PemakaianObatController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReturController;
+use App\Http\Controllers\StokMasukController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\UserController;
+use App\Models\PemakaianObat;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -50,9 +53,20 @@ Route::middleware(['auth', 'check.level:admin'])->group(function () {
     Route::get('/pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
     Route::post('/transaksi/approve/{id}', [PengajuanController::class, 'approve'])->name('transaksi.approve');
     Route::post('/transaksi/reject/{id}', [PengajuanController::class, 'reject'])->name('transaksi.reject');
-    Route::post('/obat/{id}/tambah-stok', [ObatController::class, 'tambahStok'])->name('obat.tambahStok');
+    Route::post('/obat/{id}/tambah-stok', [StokMasukController::class, 'tambahStok'])->name('obat.tambahStok');
+    Route::get('/lihat-pemakaian', [PemakaianObatController::class, 'index'])->name('pemakaian.index');
+    Route::get('/lihat-pemakaian/{id}/detail', [PemakaianObatController::class, 'show'])->name('pemakaian.show');
+    Route::get('/pemakaian/cetak', [LaporanController::class, 'cetak'])->name('pemakaian.cetak');
+    Route::get('/admin/profile', [ProfileController::class, 'indexAdmin'])->name('profile.admin.index');
+    Route::get('/admin/profile/edit/{user}', [ProfileController::class, 'editAdmin'])->name('profile.admin.edit');
+    Route::put('/admin/profile/edit/{user}', [ProfileController::class, 'updateAdmin'])->name('profile.admin.update');
     Route::get('laporan', [LaporanController::class, 'index'])->name('laporan.index');
     Route::get('/laporan/cetak', [LaporanController::class, 'cetak'])->name('laporan.cetak');
+    Route::get('/admin/laporan/pemakaian', [LaporanController::class, 'laporanPemakaianAdmin'])->name('admin.laporan.pemakaian');
+    Route::get('/laporan/pemakaian/cetak', [LaporanController::class, 'cetakPemakaianAdmin'])
+        ->name('laporan.pemakaian.cetak');
+
+
     // Route::get('/dashboard/notifikasi', [PengajuanController::class, 'getNotifikasi'])->name('dashboard.notifikasi');
     // Route::get('/notifikasi/baca/{id}', [PengajuanController::class, 'bacaNotifikasi'])->name('notifikasi.baca');
 });
@@ -68,7 +82,6 @@ Route::middleware(['auth', 'check.level:operator'])->group(function () {
     Route::get('/transaksi/detail/{id}', [TransaksiController::class, 'detail'])->name('transaksi.detail');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile/edit/{user}', [ProfileController::class, 'edit'])->name('profile.edit');
-    // Route untuk memproses pembaruan profil
     Route::put('/profile/edit/{user}', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/operator/laporder', [LaporanController::class, 'laporder'])->name('laporan.operator');
     Route::get('/operator/cetakorder', [LaporanController::class, 'cetakOrder'])->name('operator.cetakorder');
@@ -76,5 +89,8 @@ Route::middleware(['auth', 'check.level:operator'])->group(function () {
     Route::post('/transaksi/{id}/retur', [TransaksiController::class, 'retur'])->name('transaksi.retur');
     Route::get('transaksi/{id}/retur', [TransaksiController::class, 'getRetur'])->name('transaksi.getRetur');
     Route::get('/operator/rekap', [DashboardController::class, 'rekapTransaksi'])->name('operator.rekap');
-    
+    Route::resource('pemakaian-obat', PemakaianObatController::class)->except(['edit', 'update']);
+    // Route::get('/laporan/pemakaian', [LaporanController::class, 'laporanPemakaian'])->name('laporan.pemakaian');
+    Route::get('/operator/laporan-pemakaian', [LaporanController::class, 'laporanPemakaian'])->name('laporan.pemakaian');
+    Route::get('/operator/laporan-pemakaian/cetak', [LaporanController::class, 'cetakPemakaian'])->name('operator.cetakpemakaian');
 });

@@ -153,6 +153,8 @@
                 padding: 6px;
             }
         }
+
+        z
     </style>
 </head>
 
@@ -170,7 +172,11 @@
         <br>
         <!-- Judul -->
         <h1>Laporan Permintaan Obat {{ auth()->user()->ruangan }}</h1>
-        <p>Bulan: {{ $bulan }} | Tahun: {{ $tahun }} | Ruangan: {{ $ruangan }}</p>
+        <p>
+            Bulan: {{ $bulan ? \Carbon\Carbon::create()->month($bulan)->translatedFormat('F') : 'Semua' }} |
+            Tahun: {{ $tahun ?? 'Semua' }} |
+            Ruangan: {{ $ruangan }}
+        </p>
 
         <!-- Rekap Total Permintaan -->
         <table class="rekap-table">

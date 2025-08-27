@@ -84,28 +84,25 @@
                     </a> --}}
 
                     <!-- Foto Profil -->
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" id="navbarDropdown" href="#"
-                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link d-flex align-items-center" href="#">
                         <div class="avatar-sm me-2">
                             @if (Auth::user()->foto)
-                                <!-- Menampilkan gambar profil yang diupload -->
                                 <img src="{{ asset('storage/user/' . Auth::user()->foto) }}" alt="User Avatar"
                                     class="avatar-img rounded-circle"
                                     style="width: 35px; height: 35px; object-fit: cover;" />
                             @else
-                                <!-- Menampilkan gambar default jika foto belum diupload -->
                                 <img src="{{ asset('img/profil.jpg') }}" alt="Default Avatar"
                                     class="avatar-img rounded-circle"
                                     style="width: 35px; height: 35px; object-fit: cover;" />
                             @endif
                         </div>
-                        <!-- Nama dan Jabatan -->
+
                         <div class="profile-username d-flex flex-column" style="color: rgba(255, 255, 255, 0.8);">
-                            <!-- Menggunakan rgba untuk efek redup -->
                             <span class="fw-bold" style="font-size: 14px">{{ Auth::user()->nama_pegawai }}</span>
                             <small style="font-size: 12px">{{ Auth::user()->jabatan }}</small>
                         </div>
                     </a>
+
                     <!-- Dropdown -->
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                         @if (Auth::user()->level == 'operator')
@@ -147,92 +144,116 @@
                         @endif
 
                         <div class="sb-sidenav-menu-heading">Menu</div>
-
                         <!-- Hanya tampil untuk Admin -->
                         @if (Auth::user()->level == 'admin')
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                                data-bs-target="#collapseMasterData" aria-expanded="false"
-                                aria-controls="collapseMasterData">
-                                <div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>
+                            <!-- Label Data Master (tidak bisa diklik / tidak dropdown) -->
+                            <div class="nav-link disabled" style="font-weight: bold; color: #adb5bd;">
+                                <div class="sb-nav-link-icon"><i class="y"></i></div>
                                 Data Master
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="collapse" id="collapseMasterData" aria-labelledby="headingMasterData"
-                                data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link {{ request()->is('user') ? 'active' : '' }}" href="/user">
-                                        <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
-                                        User
-                                    </a>
-                                    <a class="nav-link {{ request()->is('obat') ? 'active' : '' }}" href="/obat">
-                                        <div class="sb-nav-link-icon"><i class="fas fa-pills"></i></div>
-                                        Data Obat
-                                    </a>
-                                    <a class="nav-link {{ request()->is('jenis_obat') ? 'active' : '' }}"
-                                        href="{{ route('jenis_obat.index') }}">
-                                        <div class="sb-nav-link-icon"><i class="fas fa-pills"></i></div>
-                                        Jenis Obat
-                                    </a>
-
-                                </nav>
                             </div>
+
+                            <!-- Submenu Menjorok ke Dalam -->
+                            <div class="ms-4"> {{-- Indentasi agar tampak seperti submenu --}}
+                                <a class="nav-link {{ request()->is('user') ? 'active' : '' }}" href="/user">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                    User
+                                </a>
+                                <a class="nav-link {{ request()->is('obat') ? 'active' : '' }}" href="/obat">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-pills"></i></div>
+                                    Data Obat
+                                </a>
+                                <a class="nav-link {{ request()->is('jenis_obat') ? 'active' : '' }}"
+                                    href="{{ route('jenis_obat.index') }}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-pills"></i></div>
+                                    Jenis Obat
+                                </a>
+                            </div>
+
+                            <!-- Menu Lainnya -->
                             <a class="nav-link {{ request()->is('pengajuan') ? 'active' : '' }}"
                                 href="{{ route('pengajuan.index') }}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-shopping-cart"></i></div>
-                                Permintaan
+                                Permintaan Obat
                             </a>
-                            {{-- <a class="nav-link {{ request()->is('pembelian') ? 'active' : '' }}" href=" ">
-                                <div class="sb-nav-link-icon"><i class="fa fa-cart-plus"></i></div>
-                                Stok Obat
+
+                            {{-- Uncomment jika dibutuhkan --}}
+                            {{-- 
+    <a class="nav-link {{ request()->is('pembelian') ? 'active' : '' }}" href="#">
+        <div class="sb-nav-link-icon"><i class="fa fa-cart-plus"></i></div>
+        Stok Obat
+    </a>
+    <a class="nav-link {{ request()->is('retur') ? 'active' : '' }}" href="#">
+        <div class="sb-nav-link-icon"><i class="fa fa-undo"></i></div>
+        Retur
+    </a>
+    --}}
+                            <a class="nav-link {{ request()->is('lihat-pemakaian') ? 'active' : '' }}"
+                                href="{{ route('pemakaian.index') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-notes-medical"></i></div>
+                                Pemakaian Obat
                             </a>
-                            <a class="nav-link {{ request()->is('retur') ? 'active' : '' }}" href=" ">
-                                <div class="sb-nav-link-icon"><i class="fa fa-undo"></i></div>
-                                Retur
-                            </a> --}}
+
                             <a class="nav-link {{ request()->is('laporan') ? 'active' : '' }}" href="/laporan">
                                 <div class="sb-nav-link-icon"><i class="fas fa-print"></i></div>
-                                Laporan
+                                Cetak Laporan
                             </a>
+
+                            <a class="nav-link {{ request()->is('profile') ? 'active' : '' }}"
+                                href="{{ route('profile.admin.index') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-cog"></i></div>
+                                Pengaturan
+                            </a>
+
                             <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
                                 <div class="sb-nav-link-icon"><i class="fas fa-sign-out-alt"></i></div>
                                 Keluar
                             </a>
+
                             <form id="logout-form" action="{{ route('logout') }}" method="POST"
                                 style="display: none;">
                                 @csrf
                             </form>
-                    </div>
-                </div>
-                @endif
+                        @endif
 
-                <!-- Menu Transaksi untuk Operator -->
-                @if (Auth::user()->level == 'operator')
-                    <a class="nav-link {{ request()->is('operator/dataobat') ? 'active' : '' }}"
-                        href="{{ route('operator.dataobat') }}">
-                        <div class="sb-nav-link-icon"><i class="fas fa-pills"></i></div>
-                        Data Obat
-                    </a>
 
-                    <a class="nav-link {{ request()->is('transaksi') ? 'active' : '' }}" href="/transaksi">
-                        <div class="sb-nav-link-icon"><i class="fas fa-shopping-cart"></i></div>
-                        Order Obat
-                    </a>
-                    <a class="nav-link {{ request()->routeIs('laporan.operator') ? 'active' : '' }}"
-                        href="{{ route('laporan.operator') }}">
-                        <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>
-                        Laporan Order
-                    </a>
+                        <!-- Menu Transaksi untuk Operator -->
+                        @if (Auth::user()->level == 'operator')
+                            <a class="nav-link {{ request()->is('operator/dataobat') ? 'active' : '' }}"
+                                href="{{ route('operator.dataobat') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-pills"></i></div>
+                                Data Obat
+                            </a>
 
-                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                        <div class="sb-nav-link-icon"><i class="fas fa-sign-out-alt"></i></div>
-                        Keluar
-                    </a>
-                @endif
+                            <a class="nav-link {{ request()->is('transaksi') ? 'active' : '' }}" href="/transaksi">
+                                <div class="sb-nav-link-icon"><i class="fas fa-shopping-cart"></i></div>
+                                Order Obat
+                            </a>
+                            <a class="nav-link {{ request()->is('pemakaian-obat*') ? 'active' : '' }}"
+                                href="{{ route('pemakaian-obat.index') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-notes-medical"></i></div>
+                                Pemakaian Obat
+                            </a>
+                            <a class="nav-link {{ request()->routeIs('laporan.operator') ? 'active' : '' }}"
+                                href="{{ route('laporan.operator') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>
+                                Cetak Laporan
+                            </a>
+                            <a class="nav-link {{ request()->is('profile') ? 'active' : '' }}"
+                                href="{{ route('profile.index') }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-cog"></i></div>
+                                Pengaturan
+                            </a>
 
-                <div class="sb-sidenav-footer" style="color: white;">
-                    <div class="small">Masuk Sebagai</div>
-                    <span class="fw-bold" style="font-size: 20px">{{ Auth::user()->level }}</span>
-                </div>
+                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                <div class="sb-nav-link-icon"><i class="fas fa-sign-out-alt"></i></div>
+                                Keluar
+                            </a>
+                        @endif
+
+                        <div class="sb-sidenav-footer" style="color: white;">
+                            <div class="small">Masuk Sebagai</div>
+                            <span class="fw-bold" style="font-size: 20px">{{ Auth::user()->level }}</span>
+                        </div>
 
             </nav>
         </div>

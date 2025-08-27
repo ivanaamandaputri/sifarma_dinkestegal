@@ -38,7 +38,7 @@
                                     <th>Nama Obat</th>
                                     <th>Jumlah Order</th>
                                     <th>Acc</th>
-                                    <th>Jumlah Retur</th>
+                                    {{-- <th>Jumlah Retur</th> --}}
                                     <th>Harga (Rp)</th>
                                     <th>Total (Rp)</th>
                                     <th>Puskesmas</th>
@@ -57,7 +57,7 @@
                                         </td>
                                         <td>{{ number_format($item->jumlah, 0, ',', '.') }}</td>
                                         <td>{{ number_format($item->acc, 0, ',', '.') }}</td>
-                                        <td>{{ isset($item->retur->jumlah) ? number_format($item->retur->jumlah, 0, ',', '.') : '-' }}
+                                        {{-- <td>{{ isset($item->retur->jumlah) ? number_format($item->retur->jumlah, 0, ',', '.') : '-' }} --}}
                                         <td>{{ number_format($item->obat->harga, 0, ',', '.') }}</td>
                                         <td>{{ number_format($item->total, 0, ',', '.') }}</td>
                                         <td>{{ $item->user->ruangan }}</td>
@@ -73,14 +73,14 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if ($item->status === 'Diretur')
+                                            {{-- @if ($item->status === 'Diretur')
                                                 <button type="button" class="btn btn-light btn-sm view-retur-btn"
                                                     data-id="{{ $item->id }}"
                                                     data-jumlah="{{ $item->retur->jumlah ?? 'Tidak Ada' }}"
                                                     data-alasan="{{ $item->retur->alasan_retur ?? 'Tidak Ada' }}">
                                                     Alasan Retur
                                                 </button>
-                                            @endif
+                                            @endif --}}
                                             @if ($item->status === 'Ditolak')
                                                 <button type="button" class="btn btn-sm btn-light view-reason-btn"
                                                     data-reason="{{ $item->alasan_penolakan }}">Alasan</button>
@@ -89,7 +89,7 @@
                                             @if ($item->status === 'Menunggu')
                                                 <button type="button" class="btn btn-sm btn-primary approve-btn"
                                                     data-id="{{ $item->id }}"
-                                                    data-max-jumlah="{{ $item->jumlah }}">Setujui</button>
+                                                    data-max-jumlah="{{ $item->jumlah }}"data-stok="{{ $item->obat->stok }}">Setujui</button>
                                                 <button type="button" class="btn btn-sm btn-danger reject-btn"
                                                     data-id="{{ $item->id }}">Tolak</button>
                                             @endif
@@ -118,7 +118,7 @@
                 </div>
             </div>
         </div>
-
+        {{-- 
         <!-- Modal Lihat Alasan Retur -->
         <div class="modal fade" id="alasanReturModal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
@@ -133,7 +133,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Modal Konfirmasi Setuju -->
         <div class="modal fade" id="confirmApproveModal" tabindex="-1" aria-hidden="true">
@@ -195,28 +195,37 @@
                 $('#reasonModal').modal('show');
             });
 
-            // Tombol untuk Setujui
+            // Saat tombol "Setujui" diklik, munculkan modal
             $(document).on('click', '.approve-btn', function() {
-                const id = $(this).data('id');
+                const transaksiId = $(this).data('id');
                 const maxJumlah = $(this).data('max-jumlah');
-                $('#confirmApproveModal').data('id', id);
-                $('#jumlahAcc').val(maxJumlah);
+                const stok = $(this).data('stok');
+
+                $('#jumlahAcc').val(maxJumlah); // Isi default jumlah acc
+                $('#confirmApproveModal').data('id', transaksiId);
                 $('#errorAcc').hide();
                 $('#confirmApproveModal').modal('show');
             });
 
-            // Konfirmasi Setujui
+            // Tombol untuk Setujui
             $(document).on('click', '#confirmApproveButton', function() {
                 const jumlahAcc = parseInt($('#jumlahAcc').val());
                 const transaksiId = $('#confirmApproveModal').data('id');
+                const stokTersedia = parseInt($(`.approve-btn[data-id="${transaksiId}"]`).data('stok'));
 
-                // Validasi jumlah ACC
                 if (!jumlahAcc || jumlahAcc <= 0) {
                     $('#errorAcc').text('Jumlah ACC tidak boleh kosong atau kurang dari 1').show();
                     return;
                 }
 
-                // Kirim data via AJAX
+                if (jumlahAcc > stokTersedia) {
+                    $('#errorAcc').text(`Jumlah ACC melebihi stok yang tersedia (${stokTersedia})`).show();
+                    return;
+                }
+
+                $('#errorAcc').hide();
+
+                // Kirim data via AJAX jika lolos validasi
                 $.ajax({
                     url: `/transaksi/approve/${transaksiId}`,
                     type: 'POST',
@@ -227,13 +236,11 @@
                     success: function(response) {
                         $('#confirmApproveModal').modal('hide');
                         $('#alert-container').html(`
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            ${response.message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    `);
-
-                        // Tunggu 1 detik sebelum memperbarui tampilan UI
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    ${response.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `);
                         setTimeout(() => {
                             const transaksiRow = $(`#transaksi-${transaksiId}`);
                             transaksiRow.find('.status').html(
@@ -241,11 +248,14 @@
                             transaksiRow.find('.approve-btn, .reject-btn').remove();
                         }, 1000);
                     },
-                    error: function() {
-                        alert('Terjadi kesalahan. Silakan coba lagi.');
+                    error: function(xhr) {
+                        const errorMessage = xhr.responseJSON?.error || 'Terjadi kesalahan.';
+                        $('#errorAcc').text(errorMessage)
+                            .show(); // Tampilkan di bawah input, bukan alert
                     }
                 });
             });
+
 
             // Tombol untuk Tolak
             $(document).on('click', '.reject-btn', function() {
@@ -301,38 +311,38 @@
                 });
             });
 
-            // Fungsi untuk Retur transaksi
-            $('.retur-btn').on('click', function() {
-                const idTransaksi = $(this).data('id');
-                const alasanRetur = $(this).data('alasan');
-                $.ajax({
-                    url: '/transaksi/retur',
-                    type: 'POST',
-                    data: {
-                        id_transaksi: idTransaksi, // ID transaksi yang ingin diretur
-                        alasan: alasanRetur, // Alasan retur
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        alert(response.message);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error:", error);
-                        console.log(xhr.responseText);
-                    }
-                });
-            });
+            // // Fungsi untuk Retur transaksi
+            // $('.retur-btn').on('click', function() {
+            //     const idTransaksi = $(this).data('id');
+            //     const alasanRetur = $(this).data('alasan');
+            //     $.ajax({
+            //         url: '/transaksi/retur',
+            //         type: 'POST',
+            //         data: {
+            //             id_transaksi: idTransaksi, // ID transaksi yang ingin diretur
+            //             alasan: alasanRetur, // Alasan retur
+            //             _token: '{{ csrf_token() }}'
+            //         },
+            //         success: function(response) {
+            //             alert(response.message);
+            //         },
+            //         error: function(xhr, status, error) {
+            //             console.error("Error:", error);
+            //             console.log(xhr.responseText);
+            //         }
+            //     });
+            // });
 
-            // Tombol untuk melihat alasan retur
-            $('.view-retur-btn').on('click', function() {
-                const id = $(this).data('id');
-                const jumlah = $(this).data('jumlah');
-                const alasan = $(this).data('alasan');
-                console.log(`ID: ${id}, Jumlah: ${jumlah}, Alasan: ${alasan}`);
-                $('#jumlahRetur').text(jumlah);
-                $('#alasanRetur').text(alasan);
-                $('#alasanReturModal').modal('show');
-            });
+            // // Tombol untuk melihat alasan retur
+            // $('.view-retur-btn').on('click', function() {
+            //     const id = $(this).data('id');
+            //     const jumlah = $(this).data('jumlah');
+            //     const alasan = $(this).data('alasan');
+            //     console.log(`ID: ${id}, Jumlah: ${jumlah}, Alasan: ${alasan}`);
+            //     $('#jumlahRetur').text(jumlah);
+            //     $('#alasanRetur').text(alasan);
+            //     $('#alasanReturModal').modal('show');
+            // });
 
 
         });

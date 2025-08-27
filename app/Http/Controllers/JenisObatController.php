@@ -26,21 +26,26 @@ class JenisObatController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi input dari form
         $request->validate([
-            'nama_jenis' => 'required|string|max:255|unique:jenis_obat,nama_jenis', // Pastikan tabel jenis_obat
+            'nama_jenis' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[A-Za-z\s]+$/',
+                'unique:jenis_obat,nama_jenis'
+            ],
         ], [
-            'nama_jenis.unique' => 'jenis obat sudah digunakan',  // Pesan error khusus
-            'nama_jenis.required' => 'jenis obat harus diisi',
-            'nama_jenis.max' => 'jenis obat terlalu panjang.'
+            'nama_jenis.required' => 'Jenis obat harus diisi.',
+            'nama_jenis.regex' => 'Jenis obat hanya boleh huruf dan spasi.',
+            'nama_jenis.unique' => 'Jenis obat sudah digunakan.',
+            'nama_jenis.max' => 'Jenis obat terlalu panjang.'
         ]);
 
-        // Menyimpan data jenis obat baru ke database
         $jenisObat = JenisObat::create($request->all());
 
-        // Redirect kembali ke halaman daftar jenis obat dengan pesan sukses
         return redirect()->route('jenis_obat.index')->with('success', $jenisObat->nama_jenis . ' berhasil ditambahkan');
     }
+
 
 
     // Method edit
@@ -50,25 +55,27 @@ class JenisObatController extends Controller
         return view('jenis.edit', compact('jenisObat'));
     }
 
-    public function update(Request $request, JenisObat $jenisObat)
+    public function update(Request $request, $id)
     {
-        // Validasi input dari form
         $request->validate([
-            'nama_jenis' => 'required|string|max:255|unique:jenis_obat,nama_jenis,' . $jenisObat->id, // Mengabaikan validasi unik untuk jenis obat yang sedang diedit
+            'nama_jenis' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[A-Za-z\s]+$/',
+                'unique:jenis_obat,nama_jenis,' . $id
+            ],
         ], [
-            'nama_jenis.unique' => 'jenis obat sudah digunakan',  // Pesan error khusus
-            'nama_jenis.required' => 'jenis obat harus diisi',
-            'nama_jenis.max' => 'jenis obat terlalu panjang.'
+            'nama_jenis.required' => 'Jenis obat harus diisi.',
+            'nama_jenis.regex' => 'Jenis obat hanya boleh huruf dan spasi.',
+            'nama_jenis.unique' => 'Jenis obat sudah digunakan.',
+            'nama_jenis.max' => 'Jenis obat terlalu panjang.'
         ]);
 
-        // Simpan nama jenis obat sebelum diperbarui
-        $namaJenis = $jenisObat->nama_jenis;
-
-        // Memperbarui data jenis obat
+        $jenisObat = JenisObat::findOrFail($id);
         $jenisObat->update($request->all());
 
-        // Redirect kembali ke halaman daftar jenis obat dengan pesan sukses
-        return redirect()->route('jenis_obat.index')->with('success', "$namaJenis berhasil diperbarui.");
+        return redirect()->route('jenis_obat.index')->with('success', $jenisObat->nama_jenis . ' berhasil diperbarui');
     }
 
 

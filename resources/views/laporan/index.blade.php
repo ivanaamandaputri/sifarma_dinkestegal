@@ -2,6 +2,21 @@
 
 @section('content')
     <div class="container py-3">
+
+        <!-- Tombol Navigasi Halaman -->
+        <div class="d-flex mb-4 gap-2">
+            <a href="{{ route('laporan.index') }}"
+                class="btn btn-outline-secondary {{ request()->is('laporan*') ? 'active' : '' }}">
+                Laporan Permintaan Obat
+            </a>
+            <a href="{{ route('admin.laporan.pemakaian') }}"
+                class="btn btn-outline-secondary {{ request()->is('admin/laporan/pemakaian*') ? 'active' : '' }}">
+                Laporan Pemakaian Obat
+            </a>
+        </div>
+
+
+
         <!-- Filter Section -->
         <div class="card mb-4">
             <div class="card-header">
@@ -40,9 +55,9 @@
 
                         <!-- Filter Ruangan -->
                         <div class="col-md-3">
-                            <label for="ruangan" class="form-label">Ruangan</label>
+                            <label for="ruangan" class="form-label">Puskesmas</label>
                             <select name="ruangan" id="ruangan" class="form-select">
-                                <option value="">Semua Ruangan</option>
+                                <option value="">Semua Puskesmas</option>
                                 @foreach ($instansiList as $ruangan)
                                     <option value="{{ $ruangan }}"
                                         {{ old('ruangan', request('ruangan')) == $ruangan ? 'selected' : '' }}>
@@ -79,14 +94,11 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between">
                 <h4 class="card-title mb-0">Laporan Transaksi Obat Keluar</h4>
-                <a href="{{ route('laporan.cetak', [
-                    'bulan' => request('bulan'),
-                    'tahun' => request('tahun'),
-                    'obat_id' => request('obat_id'),
-                ]) }}"
-                    class="btn btn-success">
-                    <i class="fas fa-print"></i> Cetak Laporan
+                <a href="{{ route('laporan.cetak', request()->only(['bulan', 'tahun', 'ruangan', 'obat_id'])) }}"
+                    target="_blank" class="btn btn-primary">
+                    Cetak Laporan
                 </a>
+
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -104,7 +116,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($query as $key => $transaksi)
+                            @foreach ($rekapTransaksi as $key => $transaksi)
                                 <tr>
                                     <td>{{ $key + 1 }}</td>
                                     <td>{{ \Carbon\Carbon::parse($transaksi->tanggal)->translatedFormat('d F Y') }}</td>

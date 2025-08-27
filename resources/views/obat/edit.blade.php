@@ -77,12 +77,12 @@
                                     placeholder="Masukkan jumlah stok obat ini (contoh: 1000)"
                                     value="{{ old('stok', $obat->stok) }}" readonly>
                             </div>
-
+{{-- 
                             <div class="form-group">
                                 <label for="exp">Tanggal Kadaluwarsa</label>
                                 <input type="date" name="exp" class="form-control"
                                     value="{{ old('exp', $obat->exp) }}" required>
-                            </div>
+                            </div> --}}
                             <div class="form-group">
                                 <label for="keterangan">Keterangan Obat</label>
                                 <textarea name="keterangan" class="form-control" id="keterangan" rows="3" placeholder="Masukkan keterangan obat">{{ old('keterangan', $obat->keterangan) }}</textarea>

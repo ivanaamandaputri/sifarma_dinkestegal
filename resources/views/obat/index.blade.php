@@ -3,7 +3,7 @@
 @section('content')
     <div class="container py-3">
         <div class="container-fluid d-flex justify-content-between">
-            <h4 class="card-title">Data Obat</h4>
+            <h4 class="card-title">Data Obat Gudang Farmasi</h4>
             @if (!$readOnly)
                 <!-- Jika bukan operator, tampilkan tombol tambah -->
                 <a href="{{ route('obat.create') }}" class="btn btn-primary mb-3">Tambah Obat</a>
@@ -36,7 +36,7 @@
                                 <th>Dosis</th>
                                 <th>Jenis</th>
                                 <th>Harga (Rp)</th>
-                                <th>Exp</th>
+                                {{-- <th>Exp</th> --}}
                                 <th>Stok</th>
                                 <th>Aksi</th>
                             </tr>
@@ -49,15 +49,15 @@
                                     <td>{{ $item->dosis }}</td>
                                     <td>{{ $item->jenisObat->nama_jenis ?? 'Tidak Ditemukan' }}</td>
                                     <td>{{ number_format($item->harga, 0, ',', '.') }}</td>
-                                    <td>
-                                        {{ $item->exp? \Carbon\Carbon::parse($item->exp)->locale('id')->translatedFormat('j M Y'): 'Tidak tersedia' }}
+                                    {{-- <td>
+                                        {{ $item->exp ? \Carbon\Carbon::parse($item->exp)->locale('id')->translatedFormat('j M Y') : 'Tidak tersedia' }}
                                         @if ($item->expWarning)
                                             <span
                                                 class="badge {{ $item->expWarning == 'Sudah Kedaluwarsa' ? 'bg-danger' : 'bg-warning' }}">
                                                 {{ $item->expWarning }}
                                             </span>
                                         @endif
-                                    </td>
+                                    </td> --}}
                                     <td>
                                         {{ number_format($item->stok, 0, ',', '.') }}
                                         @if ($item->stok == 0)
@@ -86,9 +86,15 @@
 
 
                                             <!-- Tombol Hapus -->
+                                            @php
+                                                $tidakBisaHapus =
+                                                    $item->stokMasuk()->exists() ||
+                                                    \App\Models\Transaksi::where('obat_id', $item->id)->exists();
+                                            @endphp
+
                                             <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#modalHapus{{ $item->id }}"
-                                                @if ($item->stokMasuk()->exists()) disabled @endif>
+                                                @if ($tidakBisaHapus) disabled @endif>
                                                 Hapus
                                             </button>
                                         @endif
@@ -108,26 +114,42 @@
                                                     aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
-                                                @if (!$item->stokMasuk()->exists())
-                                                    AAnda yakin ingin menghapus data obat
-                                                    <strong>{{ $item->nama_obat }}</strong>?
-                                                    Data yang sudah dihapus tidak dapat dikembalikan.
+                                                @php
+                                                    $tidakBisaHapus =
+                                                        $item->stokMasuk()->exists() ||
+                                                        \App\Models\Transaksi::where('obat_id', $item->id)->exists();
+                                                @endphp
+
+                                                @if (!$tidakBisaHapus)
+                                                    Anda yakin ingin menghapus data obat
+                                                    <strong>{{ $item->nama_obat }}</strong>? Data yang sudah dihapus tidak
+                                                    dapat dikembalikan.
                                                 @else
                                                     Data obat <strong>{{ $item->nama_obat }}</strong> tidak bisa dihapus
-                                                    karena masih memiliki stok masuk yang terkait.
+                                                    karena:
+                                                    <ul>
+                                                        @if ($item->stokMasuk()->exists())
+                                                            <li>Masih memiliki data stok masuk yang terkait.</li>
+                                                        @endif
+                                                        @if (\App\Models\Transaksi::where('obat_id', $item->id)->exists())
+                                                            <li>Sudah digunakan dalam transaksi.</li>
+                                                        @endif
+                                                    </ul>
                                                 @endif
+
                                             </div>
 
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary"
                                                     data-bs-dismiss="modal">Batal</button>
-                                                @if (!$item->stokMasuk()->exists())
+                                                @if (!$tidakBisaHapus)
                                                     <form action="{{ route('obat.destroy', $item->id) }}" method="POST">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger">Hapus</button>
                                                     </form>
                                                 @endif
+
                                             </div>
 
                                         </div>

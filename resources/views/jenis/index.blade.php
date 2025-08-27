@@ -42,8 +42,14 @@
                                             class="btn btn-warning">Edit</a>
 
                                         <!-- Tombol Hapus -->
-                                        <button class="btn btn-danger" data-bs-toggle="modal"
-                                            data-bs-target="#modalHapus{{ $jenis->id }}">Hapus</button>
+                                        <!-- Tombol Hapus -->
+                                        @if ($jenis->obat()->exists())
+                                            <button class="btn btn-danger" disabled>Hapus</button>
+                                        @else
+                                            <button class="btn btn-danger" data-bs-toggle="modal"
+                                                data-bs-target="#modalHapus{{ $jenis->id }}">Hapus</button>
+                                        @endif
+
 
                                         <!-- Modal Konfirmasi Hapus -->
                                         <div class="modal fade" id="modalHapus{{ $jenis->id }}" tabindex="-1"

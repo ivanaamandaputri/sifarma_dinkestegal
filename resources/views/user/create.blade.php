@@ -127,5 +127,20 @@
             const output = document.querySelector('.custom-photo');
             output.src = URL.createObjectURL(event.target.files[0]);
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const nipInput = document.querySelector('input[name="nip"]');
+
+            nipInput.addEventListener('input', function() {
+                const value = this.value;
+                // Cek apakah mengandung karakter non-digit
+                if (!/^\d*$/.test(value)) {
+                    this.setCustomValidity("NIP hanya boleh berisi angka.");
+                    this.reportValidity();
+                } else {
+                    this.setCustomValidity(""); // reset jika valid
+                }
+            });
+        });
     </script>
 @endsection

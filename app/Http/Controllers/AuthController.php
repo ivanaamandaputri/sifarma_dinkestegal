@@ -16,17 +16,19 @@ class AuthController extends Controller
     // Proses login
     public function login(Request $request)
     {
-        // Validasi input
+        // Validasi input dengan pesan Indonesia
         $credentials = $request->validate([
             'nip' => ['required', 'string'],
             'password' => ['required', 'string'],
+        ], [
+            'nip.required' => 'NIP harus diisi',
+            'password.required' => 'Password harus diisi',
         ]);
 
-        // Coba untuk login
+        // Coba login
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate(); // Regenerate session untuk keamanan
+            $request->session()->regenerate();
 
-            // Redirect ke dashboard yang sesuai berdasarkan level pengguna
             if (Auth::user()->level == 'admin') {
                 return redirect()->route('dashboard')->with('success', 'Login berhasil!');
             } elseif (Auth::user()->level == 'operator') {
@@ -34,9 +36,9 @@ class AuthController extends Controller
             }
         }
 
-        // Jika login gagal
+        // Jika gagal
         return back()->withErrors([
-            'nip' => 'NIP atau password salah.',
+            'nip' => 'NIP atau password salah',
         ])->onlyInput('nip');
     }
 

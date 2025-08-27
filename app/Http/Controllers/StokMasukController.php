@@ -8,28 +8,29 @@ use Illuminate\Http\Request;
 
 class StokMasukController extends Controller
 {
-    public function tambahStok(Request $request)
+    public function tambahStok(Request $request, $id)
     {
         $request->validate([
-            'obat_id' => 'required|exists:obat,id',
             'jumlah' => 'required|integer|min:1',
             'sumber' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
         ]);
 
-        // Tambah stok ke tabel stok_masuk
+        $obat = Obat::find($id);
+        if (!$obat) {
+            return back()->with('error', 'Obat tidak ditemukan.');
+        }
+
         StokMasuk::create([
-            'obat_id' => $request->obat_id,
+            'obat_id' => $obat->id,
             'jumlah' => $request->jumlah,
             'sumber' => $request->sumber,
             'tanggal' => $request->tanggal,
         ]);
 
-        // Update stok terkini di tabel obat
-        $obat = Obat::find($request->obat_id);
         $obat->stok += $request->jumlah;
         $obat->save();
 
-        return back()->with('success', 'Stok berhasil ditambahkan.');
+        return back()->with('success', "Stok obat {$obat->nama_obat} berhasil ditambahkan {$request->jumlah}.");
     }
 }

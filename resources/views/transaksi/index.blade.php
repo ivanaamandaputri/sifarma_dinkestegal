@@ -2,9 +2,14 @@
 
 @section('content')
     <div class="container py-3">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h2 class="fw-bold text-darkr">
+                Obat Masuk
+            </h2>
+        </div>
         <!-- Judul dan tombol tambah -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <a href="{{ route('transaksi.create') }}" class="btn btn-primary">Tambah Transaksi</a>
+            <a href="{{ route('transaksi.create') }}" class="btn btn-primary">Tambah Order</a>
         </div>
 
         <!-- Notifikasi Sukses -->
@@ -36,7 +41,7 @@
                                 <th>Nama Obat</th>
                                 <th>Jumlah Order</th>
                                 <th>Acc</th>
-                                <th>Jumlah Retur</th>
+                                {{-- <th>Jumlah Retur</th> --}}
                                 <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
@@ -53,15 +58,15 @@
                                     </td>
                                     <td>{{ number_format($item->jumlah, 0, ',', '.') }}</td>
                                     <td>{{ $item->acc !== null ? number_format($item->acc, 0, ',', '.') : '-' }}</td>
-                                    <td>{{ isset($item->retur->jumlah) ? number_format($item->retur->jumlah, 0, ',', '.') : '-' }}
-                                    </td>
+                                    {{-- <td>{{ isset($item->retur->jumlah) ? number_format($item->retur->jumlah, 0, ',', '.') : '-' }}
+                                    </td> --}}
                                     <td>
                                         @if ($item->status === 'Disetujui')
                                             <span class="badge bg-success">Disetujui</span>
                                         @elseif ($item->status === 'Ditolak')
                                             <span class="badge bg-danger">Ditolak</span>
-                                        @elseif ($item->status === 'Diretur')
-                                            <span class="badge bg-dark">Diretur</span>
+                                            {{-- @elseif ($item->status === 'Diretur')
+                                            <span class="badge bg-dark">Diretur</span> --}}
                                         @else
                                             <span class="badge bg-warning">Menunggu</span>
                                         @endif
@@ -80,19 +85,20 @@
                                                     class="btn btn-danger btn-sm delete-btn">Hapus</button>
                                             </form>
                                         @elseif ($item->status === 'Disetujui')
-                                            <button type="button" class="btn btn-warning btn-sm retur-btn"
+                                            {{-- <button type="button" class="btn btn-warning btn-sm retur-btn"
                                                 data-id="{{ $item->id }}" data-obat="{{ $item->obat->id }}"
                                                 data-max="{{ $item->jumlah }}" data-acc="{{ $item->acc ?? 0 }}"
                                                 data-nama="{{ $item->obat->nama_obat }}" data-bs-toggle="modal"
-                                                data-bs-target="#returModal{{ $item->id }}">Retur</button>
+                                                data-bs-target="#returModal{{ $item->id }}">Retur</button> --}}
                                         @elseif ($item->status === 'Diretur')
-                                            <button type="button" class="btn btn-light btn-sm alasan-retur-btn"
-                                                data-id="{{ $item->id }}">Alasan Retur</button>
+                                            {{-- <button type="button" class="btn btn-light btn-sm alasan-retur-btn"
+                                                data-id="{{ $item->id }}">Alasan Retur</button> --}}
                                         @endif
                                     </td>
+
                                 </tr>
 
-                                <!-- Modal Retur -->
+                                {{-- <!-- Modal Retur -->
                                 <div class="modal fade" id="returModal{{ $item->id }}" tabindex="-1"
                                     aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
@@ -116,56 +122,56 @@
                                                         <label for="alasan" class="form-label">Alasan Retur</label>
                                                         <textarea name="alasan" id="alasan{{ $item->id }}" class="form-control" rows="3" required></textarea>
                                                     </div>
-                                                    <button type="submit" class="btn btn-primary">Kirim Retur</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                                    {{-- {{-- <button type="submit" class="btn btn-primary">Kirim Retur</button> --}}
+                                </form>
                 </div>
             </div>
         </div>
+    </div>
+    @endforeach
+    </tbody>
+    </table>
+    </div>
+    </div>
+    </div>
 
-        <!-- Modal Konfirmasi Hapus -->
-        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="confirmDeleteModalLabel">Konfirmasi Hapus</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        Yakin ingin menghapus transaksi ini?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
-                    </div>
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Yakin ingin menghapus transaksi ini?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
                 </div>
             </div>
         </div>
+    </div>
 
 
-        <!-- Modal Alasan Penolakan -->
-        <div class="modal fade" id="reasonModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Alasan Penolakan</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p id="reasonText"></p>
-                    </div>
+    <!-- Modal Alasan Penolakan -->
+    <div class="modal fade" id="reasonModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Alasan Penolakan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="reasonText"></p>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Modal Lihat Alasan Retur -->
+    {{-- <!-- Modal Lihat Alasan Retur -->
         <div class="modal fade" id="alasanReturModal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -190,7 +196,7 @@
                     returModal.show();
                 });
             </script>
-        @endif
+        @endif --}}
 
 
 
@@ -251,32 +257,32 @@
                 $('#reasonModal').modal('show');
             });
 
-            // Tampilkan modal alasan retur
-            $(document).on('click', '.alasan-retur-btn', function() {
-                const id = $(this).data('id'); // Ambil ID transaksi dari tombol
+            // // Tampilkan modal alasan retur
+            // $(document).on('click', '.alasan-retur-btn', function() {
+            //     const id = $(this).data('id'); // Ambil ID transaksi dari tombol
 
-                // Lakukan request AJAX untuk mendapatkan data retur
-                $.ajax({
-                    url: `/transaksi/${id}/retur`, // Pastikan URL sesuai dengan rute yang benar
-                    type: 'GET',
-                    success: function(data) {
-                        if (data.error) {
-                            alert(data.error); // Jika data tidak ditemukan
-                        } else {
-                            // Menampilkan data jumlah retur dan alasan retur ke dalam modal
-                            $('#jumlahRetur').text(data.jumlah); // Set jumlah retur
-                            $('#alasanRetur').text(data.alasan_retur); // Set alasan retur
+            //     // Lakukan request AJAX untuk mendapatkan data retur
+            //     $.ajax({
+            //         url: `/transaksi/${id}/retur`, // Pastikan URL sesuai dengan rute yang benar
+            //         type: 'GET',
+            //         success: function(data) {
+            //             if (data.error) {
+            //                 alert(data.error); // Jika data tidak ditemukan
+            //             } else {
+            //                 // Menampilkan data jumlah retur dan alasan retur ke dalam modal
+            //                 $('#jumlahRetur').text(data.jumlah); // Set jumlah retur
+            //                 $('#alasanRetur').text(data.alasan_retur); // Set alasan retur
 
-                            const modal = new bootstrap.Modal(document.getElementById(
-                                'alasanReturModal'));
-                            modal.show(); // Tampilkan modal
-                        }
-                    },
-                    error: function() {
-                        alert('Gagal mengambil data retur.');
-                    }
-                });
-            });
+            //                 const modal = new bootstrap.Modal(document.getElementById(
+            //                     'alasanReturModal'));
+            //                 modal.show(); // Tampilkan modal
+            //             }
+            //         },
+            //         error: function() {
+            //             alert('Gagal mengambil data retur.');
+            //         }
+            //     });
+            // });
 
 
             document.addEventListener('DOMContentLoaded', function() {
@@ -304,56 +310,56 @@
             });
 
 
-            // Menangani tombol retur untuk memvalidasi dan mengirim data
-            $(document).on('click', '.retur-btn', function() {
-                const transaksiId = $(this).data('id');
-                const maxJumlah = $(this).data('max');
-                $('#returModal').modal('show');
-                $('#errorJumlah').text('');
-                $('#jumlah').val('');
-                $('#jumlah').attr('max',
-                    maxJumlah); // Set batas jumlah retur sesuai jumlah transaksi yang sudah disetujui
-                $('#returForm').off('submit').on('submit', function(e) {
-                    e.preventDefault();
-                    const jumlah = parseInt($('#jumlah').val());
-                    const alasan = $('#alasan').val();
+            //     // Menangani tombol retur untuk memvalidasi dan mengirim data
+            //     $(document).on('click', '.retur-btn', function() {
+            //         const transaksiId = $(this).data('id');
+            //         const maxJumlah = $(this).data('max');
+            //         $('#returModal').modal('show');
+            //         $('#errorJumlah').text('');
+            //         $('#jumlah').val('');
+            //         $('#jumlah').attr('max',
+            //             maxJumlah); // Set batas jumlah retur sesuai jumlah transaksi yang sudah disetujui
+            //         $('#returForm').off('submit').on('submit', function(e) {
+            //             e.preventDefault();
+            //             const jumlah = parseInt($('#jumlah').val());
+            //             const alasan = $('#alasan').val();
 
-                    // Validasi input
-                    if (jumlah <= 0 || jumlah > maxJumlah || !alasan.trim()) {
-                        $('#errorJumlah').text(
-                            'Jumlah retur harus lebih besar dari 0 dan tidak boleh melebihi jumlah yang disetujui. Alasan retur wajib diisi.'
-                        );
-                        return;
-                    }
+            //             // Validasi input
+            //             if (jumlah <= 0 || jumlah > maxJumlah || !alasan.trim()) {
+            //                 $('#errorJumlah').text(
+            //                     'Jumlah retur harus lebih besar dari 0 dan tidak boleh melebihi jumlah yang disetujui. Alasan retur wajib diisi.'
+            //                 );
+            //                 return;
+            //             }
 
-                    // Kirim data retur ke server
-                    $.ajax({
-                        url: `/transaksi/${transaksiId}/retur`,
-                        type: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            jumlah: jumlah,
-                            alasan: alasan,
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                alert(response.success);
-                                location
-                                    .reload(); // Reload halaman setelah retur berhasil
-                            } else {
-                                alert(response.error ||
-                                    'Terjadi kesalahan saat memproses retur.');
-                            }
-                        },
-                        error: function(xhr) {
-                            console.error(xhr.responseText);
-                            alert('Terjadi kesalahan. Silakan coba lagi.');
-                        }
-                    });
+            //             // Kirim data retur ke server
+            //             $.ajax({
+            //                 url: `/transaksi/${transaksiId}/retur`,
+            //                 type: 'POST',
+            //                 data: {
+            //                     _token: '{{ csrf_token() }}',
+            //                     jumlah: jumlah,
+            //                     alasan: alasan,
+            //                 },
+            //                 success: function(response) {
+            //                     if (response.success) {
+            //                         alert(response.success);
+            //                         location
+            //                             .reload(); // Reload halaman setelah retur berhasil
+            //                     } else {
+            //                         alert(response.error ||
+            //                             'Terjadi kesalahan saat memproses retur.');
+            //                     }
+            //                 },
+            //                 error: function(xhr) {
+            //                     console.error(xhr.responseText);
+            //                     alert('Terjadi kesalahan. Silakan coba lagi.');
+            //                 }
+            //             });
 
-                    $('#returModal').modal('hide');
-                });
-            });
+            //             $('#returModal').modal('hide');
+            //         });
+            //     });
 
         });
 
@@ -364,6 +370,5 @@
                 new bootstrap.Modal(modalElement).show();
             }
         });
-
     </script>
 @endsection

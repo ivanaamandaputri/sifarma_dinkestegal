@@ -53,41 +53,50 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ route('user.show', $item->id) }}" class="btn btn-info btn">Detail</a>
-                                        <a href="{{ route('user.edit', $item->id) }}" class="btn btn-warning btn">Edit</a>
-                                        <button class="btn btn-danger btn" data-bs-toggle="modal"
-                                            data-bs-target="#modalHapus{{ $item->id }}">Hapus</button>
+                                        <a href="{{ route('user.show', $item->id) }}" class="btn btn-info">Detail</a>
+                                        <a href="{{ route('user.edit', $item->id) }}" class="btn btn-warning">Edit</a>
+
+                                        @if ($item->level !== 'admin' && $item->transaksi->isEmpty())
+                                            <!-- Tombol hapus normal -->
+                                            <button class="btn btn-danger" data-bs-toggle="modal"
+                                                data-bs-target="#modalHapus{{ $item->id }}">Hapus</button>
+                                        @else
+                                            <!-- Dinonaktifkan -->
+                                            <button class="btn btn-danger" disabled>Hapus</button>
+                                        @endif
                                     </td>
                                 </tr>
 
                                 <!-- Modal Konfirmasi Hapus -->
-                                <div class="modal fade" id="modalHapus{{ $item->id }}" tabindex="-1"
-                                    aria-labelledby="modalHapusLabel{{ $item->id }}" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="modalHapusLabel{{ $item->id }}">Konfirmasi
-                                                    Hapus</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                Apakah Anda yakin ingin menghapus data user
-                                                <strong>{{ $item->nama_pegawai }}</strong>?
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">Batal</button>
-                                                <form action="{{ route('user.destroy', $item->id) }}" method="POST"
-                                                    style="display:inline;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger">Hapus</button>
-                                                </form>
+                                @if ($item->level !== 'admin' && $item->transaksi->isEmpty())
+                                    <div class="modal fade" id="modalHapus{{ $item->id }}" tabindex="-1"
+                                        aria-labelledby="modalHapusLabel{{ $item->id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="modalHapusLabel{{ $item->id }}">
+                                                        Konfirmasi Hapus</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Apakah Anda yakin ingin menghapus user
+                                                    <strong>{{ $item->nama_pegawai }}</strong>?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Batal</button>
+                                                    <form action="{{ route('user.destroy', $item->id) }}" method="POST"
+                                                        style="display:inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger">Hapus</button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>

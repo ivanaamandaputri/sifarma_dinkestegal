@@ -17,8 +17,8 @@
                             <p><strong>Jenis:</strong> <span id="detail-jenis">-</span></p>
                             <p><strong>Dosis:</strong> <span id="detail-dosis">-</span></p>
                             <p><strong>Harga:</strong> <span id="detail-harga">-</span></p>
-                            <p><strong>Stok:</strong> <span id="detail-stok">-</span></p>
-                            <p><strong>Kedaluwarsa:</strong> <span id="detail-exp">-</span></p>
+                            <p><strong>Stok Gudang Farmasi:</strong> <span id="detail-stok">-</span></p>
+                            {{-- <p><strong>Kedaluwarsa:</strong> <span id="detail-exp">-</span></p> --}}
                             <p><strong>Keterangan:</strong> <span id="detail-keterangan">-</span></p>
                         </div>
                     </div>
@@ -33,6 +33,18 @@
                     </div>
 
                     <div class="card-body">
+                        @if ($obatTerpilih)
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Obat Dipilih</h5>
+                                    <p><strong>Nama Obat:</strong> {{ $obatTerpilih->nama_obat }}</p>
+                                    <p><strong>Dosis:</strong> {{ $obatTerpilih->dosis }}</p>
+                                    <p><strong>Jenis:</strong> {{ $obatTerpilih->jenisObat->nama_jenis ?? '-' }}</p>
+                                    <input type="hidden" name="obat_id" value="{{ $obatTerpilih->id }}">
+                                </div>
+                            </div>
+                        @endif
+
                         <form action="{{ route('transaksi.store') }}" method="POST">
                             @csrf
                             <div class="row">
@@ -46,15 +58,16 @@
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label for="obat_id">Nama Obat</label>
-                                        <select name="obat_id" class="form-control" required id="obat_id">
+                                        <select name="obat_id" class="form-control" required id="obat_id"
+                                            @if ($obatTerpilih) disabled @endif>
                                             @foreach ($obat as $item)
                                                 <option value="{{ $item->id }}" data-harga="{{ $item->harga }}"
                                                     data-dosis="{{ $item->dosis }}"
                                                     data-jenis="{{ $item->jenisObat->nama_jenis }}"
-                                                    data-stok="{{ $item->stok }}" data-exp="{{ $item->exp }}"
+                                                    data-stok="{{ $item->stok }}" {{-- data-exp="{{ $item->exp }}" --}}
                                                     data-keterangan="{{ $item->keterangan }}"
-                                                    data-foto="{{ asset('storage/obat/' . $item->foto) }}">
-                                                    <!-- Ganti path sesuai dengan struktur folder Anda -->
+                                                    data-foto="{{ asset('storage/obat/' . $item->foto) }}"
+                                                    @if ($obatTerpilih && $item->id == $obatTerpilih->id) selected @endif>
                                                     {{ $item->nama_obat }}
                                                 </option>
                                             @endforeach
@@ -106,63 +119,51 @@
             const detailJenis = document.getElementById('detail-jenis');
             const detailStok = document.getElementById('detail-stok');
             const detailHarga = document.getElementById('detail-harga');
-            const detailExp = document.getElementById('detail-exp');
+            // const detailExp = document.getElementById('detail-exp'); // Dinonaktifkan
             const detailKeterangan = document.getElementById('detail-keterangan');
             const obatNama = document.getElementById('obat-nama');
             const obatFoto = document.getElementById('obat-foto');
             const hargaInput = document.getElementById('harga')
 
-            // Fungsi untuk memperbarui informasi obat
             const updateFields = () => {
                 const selectedOption = obatSelect.options[obatSelect.selectedIndex];
                 const harga = parseFloat(selectedOption.dataset.harga);
                 const dosis = selectedOption.dataset.dosis;
                 const jenis = selectedOption.dataset.jenis;
                 const stok = selectedOption.dataset.stok;
-                const exp = selectedOption.dataset.exp;
+                // const exp = selectedOption.dataset.exp; // Dinonaktifkan
                 const keterangan = selectedOption.dataset.keterangan;
                 const foto = selectedOption.dataset.foto;
                 const jumlah = parseInt(jumlahInput.value) || 0;
 
-                // Update input fields
-                obatNama.textContent = selectedOption.text; // Menampilkan nama obat
+                obatNama.textContent = selectedOption.text;
                 detailDosis.textContent = dosis;
                 detailJenis.textContent = jenis;
                 detailStok.textContent = stok;
-                detailHarga.textContent = new Intl.NumberFormat('id-ID').format(harga); // Format harga
-                detailExp.textContent = exp;
-                detailKeterangan.innerHTML = keterangan; // Menampilkan keterangan sebagai HTML
-                obatFoto.src = foto; // Menampilkan foto obat
+                detailHarga.textContent = new Intl.NumberFormat('id-ID').format(harga);
+                // detailExp.textContent = exp; // Dinonaktifkan
+                detailKeterangan.innerHTML = keterangan;
+                obatFoto.src = foto;
                 hargaInput.value = harga;
 
-                // Update total
                 totalInput.value = new Intl.NumberFormat('id-ID').format(harga * jumlah);
             };
 
-            // Event listener untuk perubahan pada jumlah
             jumlahInput.addEventListener('input', () => {
                 const selectedOption = obatSelect.options[obatSelect.selectedIndex];
                 const harga = parseFloat(selectedOption.dataset.harga);
                 const jumlah = parseInt(jumlahInput.value) || 0;
-
-                // Update total
                 totalInput.value = new Intl.NumberFormat('id-ID').format(harga * jumlah);
             });
 
-            // Event listener untuk perubahan pada obat
             obatSelect.addEventListener('change', updateFields);
 
-            // Set initial value of dosis when page loads
-            updateFields(); // This will set the initial values on page load
+            updateFields();
         });
-        // Menunggu sampai DOM selesai dimuat
+
         document.addEventListener('DOMContentLoaded', function() {
             const tanggalInput = document.getElementById('tanggal');
-
-            // Mengambil tanggal hari ini dalam format YYYY-MM-DD
             const today = new Date().toISOString().split('T')[0];
-
-            // Set nilai input dengan tanggal hari ini
             tanggalInput.value = today;
         });
     </script>

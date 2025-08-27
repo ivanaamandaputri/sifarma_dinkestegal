@@ -42,8 +42,9 @@
                             </div>
                             <div class="form-group">
                                 <label for="dosis">Dosis</label>
-                                <input type="text" name="dosis" class="form-control"
+                                <input type="text" name="dosis" id="dosis" class="form-control"
                                     placeholder="Masukkan dosis obat (contoh: 100 Mg)" required>
+
                             </div>
                             <div class="form-group">
                                 <label for="jenis">Jenis</label>
@@ -64,10 +65,10 @@
                                 <input type="number" name="stok" class="form-control"
                                     placeholder="Masukkan jumlah stok obat ini (contoh: 1000)" required>
                             </div>
-                            <div class="form-group">
+                            {{-- <div class="form-group">
                                 <label for="exp">Tanggal Kadaluwarsa</label>
                                 <input type="date" name="exp" class="form-control" required>
-                            </div>
+                            </div> --}}
                             <div class="form-group">
                                 <label for="keterangan">Keterangan Obat</label>
                                 <textarea name="keterangan" class="form-control" id="keterangan" rows="3" placeholder="Masukkan keterangan obat"></textarea>
@@ -101,4 +102,36 @@
         // Initialize CKEditor for the 'keterangan' textarea
         CKEDITOR.replace('keterangan');
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('nama_jenis');
+            input.addEventListener('input', function() {
+                const value = this.value;
+                const isValid = /^[A-Za-z\s]*$/.test(value); // hanya huruf dan spasi
+                if (!isValid) {
+                    this.setCustomValidity("Hanya huruf dan spasi yang diperbolehkan.");
+                    this.reportValidity(); // langsung munculkan pesan
+                } else {
+                    this.setCustomValidity(""); // kosongkan jika valid
+                }
+            });
+        });
+
+        // Validasi input hanya huruf, angka, dan spasi untuk kolom dosis
+        document.addEventListener('DOMContentLoaded', function() {
+            const dosisInput = document.getElementById('dosis');
+            dosisInput.addEventListener('input', function() {
+                const value = this.value;
+                const isValid = /^[A-Za-z0-9\s]*$/.test(value); // hanya huruf, angka, spasi
+                if (!isValid) {
+                    this.setCustomValidity("Dosis hanya boleh berisi huruf, angka, dan spasi.");
+                    this.reportValidity();
+                } else {
+                    this.setCustomValidity("");
+                }
+            });
+        });
+    </script>
+
 @endsection
